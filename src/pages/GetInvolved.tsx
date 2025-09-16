@@ -1,0 +1,453 @@
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Heart, Users, Briefcase, CreditCard, Calendar, Mail, Phone, MapPin, ArrowRight, Shield, Award } from "lucide-react";
+import volunteersImage from "@/assets/volunteers-helping.jpg";
+
+const GetInvolved = () => {
+  const donationAmounts = [25, 50, 100, 250, 500, 1000];
+  
+  const volunteerOpportunities = [
+    {
+      title: "Field Volunteer",
+      location: "International",
+      commitment: "3-6 months",
+      description: "Work directly with communities on project implementation",
+      skills: ["Cross-cultural communication", "Physical fitness", "Adaptability"]
+    },
+    {
+      title: "Administrative Support",
+      location: "Remote/Office",
+      commitment: "5-10 hours/week",
+      description: "Help with data entry, communications, and office tasks",
+      skills: ["Computer skills", "Organization", "Attention to detail"]
+    },
+    {
+      title: "Event Coordinator",
+      location: "Local",
+      commitment: "Project-based",
+      description: "Plan and execute fundraising and awareness events",
+      skills: ["Event planning", "Communication", "Project management"]
+    },
+    {
+      title: "Social Media Manager",
+      location: "Remote",
+      commitment: "3-5 hours/week",
+      description: "Manage our social media presence and content creation",
+      skills: ["Social media", "Content creation", "Design skills"]
+    }
+  ];
+
+  const membershipBenefits = [
+    "Monthly impact newsletters with exclusive updates",
+    "Voting rights on key organizational decisions",
+    "Access to member-only events and webinars",
+    "Priority registration for volunteer opportunities",
+    "Annual member appreciation dinner",
+    "Tax-deductible membership fees",
+    "Direct communication with leadership team",
+    "Special recognition in annual reports"
+  ];
+
+  return (
+    <div className="min-h-screen">
+      <Header />
+      
+      {/* Hero Section */}
+      <section className="py-20 bg-gradient-hero text-white">
+        <div className="container text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+            Get Involved
+          </h1>
+          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto animate-fade-in delay-300">
+            Every contribution matters. Choose how you'd like to support our mission and create positive change.
+          </p>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <section className="py-20">
+        <div className="container">
+          <Tabs defaultValue="donate" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto mb-12">
+              <TabsTrigger value="donate" className="flex items-center space-x-2">
+                <Heart className="w-4 h-4" />
+                <span>Donate</span>
+              </TabsTrigger>
+              <TabsTrigger value="volunteer" className="flex items-center space-x-2">
+                <Briefcase className="w-4 h-4" />
+                <span>Volunteer</span>
+              </TabsTrigger>
+              <TabsTrigger value="membership" className="flex items-center space-x-2">
+                <Users className="w-4 h-4" />
+                <span>Membership</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Donation Tab */}
+            <TabsContent value="donate" className="space-y-8">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">Make a Donation</h2>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Your generosity directly funds our projects and creates lasting change in communities worldwide.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-12">
+                <Card className="shadow-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Heart className="w-5 h-5 mr-2 text-primary" />
+                      Donation Form
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Donation Amount</label>
+                      <div className="grid grid-cols-3 gap-2 mb-4">
+                        {donationAmounts.map(amount => (
+                          <Button key={amount} variant="outline" className="text-sm">
+                            ${amount}
+                          </Button>
+                        ))}
+                      </div>
+                      <Input placeholder="Custom amount" type="number" />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Donation Type</label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select donation type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="one-time">One-time donation</SelectItem>
+                            <SelectItem value="monthly">Monthly recurring</SelectItem>
+                            <SelectItem value="quarterly">Quarterly recurring</SelectItem>
+                            <SelectItem value="annual">Annual recurring</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Designate Your Gift</label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Where it's needed most" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="general">Where it's needed most</SelectItem>
+                            <SelectItem value="water">Clean Water Projects</SelectItem>
+                            <SelectItem value="education">Education Programs</SelectItem>
+                            <SelectItem value="healthcare">Healthcare Initiatives</SelectItem>
+                            <SelectItem value="emergency">Emergency Relief</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Donor Information</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input placeholder="First Name" />
+                        <Input placeholder="Last Name" />
+                      </div>
+                      <Input placeholder="Email Address" type="email" />
+                      <Input placeholder="Phone Number" type="tel" />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="anonymous" />
+                      <label htmlFor="anonymous" className="text-sm">Make this donation anonymous</label>
+                    </div>
+
+                    <Button className="w-full" size="lg">
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Donate Securely
+                    </Button>
+
+                    <div className="text-center text-sm text-muted-foreground">
+                      <Shield className="w-4 h-4 inline mr-1" />
+                      100% secure checkout • Tax-deductible
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-6">
+                  <Card className="shadow-card">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold mb-4">Your Impact</h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span>$25 provides clean water for 1 person for 1 year</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>$50 supplies school materials for 1 child</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>$100 funds medical care for 5 families</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>$250 supports a teacher's salary for 1 month</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold mb-4">Other Ways to Give</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium">Corporate Sponsorship</h4>
+                          <p className="text-sm text-muted-foreground">Partner with us for large-scale impact and CSR opportunities.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Planned Giving</h4>
+                          <p className="text-sm text-muted-foreground">Include Charity Z in your will or estate planning.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Stock Donations</h4>
+                          <p className="text-sm text-muted-foreground">Donate appreciated securities for tax advantages.</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Volunteer Tab */}
+            <TabsContent value="volunteer" className="space-y-8">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">Become a Volunteer</h2>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Share your skills, time, and passion to directly impact communities in need.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-12">
+                <div className="space-y-6">
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle>Volunteer Application</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input placeholder="First Name" />
+                        <Input placeholder="Last Name" />
+                      </div>
+                      <Input placeholder="Email Address" type="email" />
+                      <Input placeholder="Phone Number" type="tel" />
+                      <Input placeholder="Location/City" />
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Areas of Interest</label>
+                        <div className="space-y-2">
+                          {["Field Work", "Administrative", "Event Planning", "Social Media", "Fundraising", "Education"].map(area => (
+                            <div key={area} className="flex items-center space-x-2">
+                              <Checkbox id={area} />
+                              <label htmlFor={area} className="text-sm">{area}</label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Availability</label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your availability" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="weekends">Weekends only</SelectItem>
+                            <SelectItem value="weekdays">Weekday evenings</SelectItem>
+                            <SelectItem value="flexible">Flexible schedule</SelectItem>
+                            <SelectItem value="full-time">Full-time commitment</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Textarea placeholder="Tell us about your skills, experience, and why you want to volunteer with Charity Z..." rows={4} />
+
+                      <Button className="w-full">
+                        <Users className="w-4 h-4 mr-2" />
+                        Submit Application
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="relative h-64 rounded-lg overflow-hidden">
+                    <img
+                      src={volunteersImage}
+                      alt="Volunteers in action"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <Users className="w-12 h-12 mx-auto mb-4" />
+                        <h3 className="text-xl font-bold">Join Our Community</h3>
+                        <p>200+ active volunteers worldwide</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    {volunteerOpportunities.map((opportunity, index) => (
+                      <Card key={index} className="shadow-card">
+                        <CardContent className="p-4">
+                          <h4 className="font-semibold mb-2">{opportunity.title}</h4>
+                          <div className="space-y-1 text-sm text-muted-foreground mb-3">
+                            <div className="flex items-center">
+                              <MapPin className="w-3 h-3 mr-1" />
+                              {opportunity.location}
+                            </div>
+                            <div className="flex items-center">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              {opportunity.commitment}
+                            </div>
+                          </div>
+                          <p className="text-sm mb-3">{opportunity.description}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {opportunity.skills.map(skill => (
+                              <span key={skill} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Membership Tab */}
+            <TabsContent value="membership" className="space-y-8">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">Become a Member</h2>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Join our community of changemakers and have a voice in shaping our mission.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-12">
+                <Card className="shadow-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Award className="w-5 h-5 mr-2 text-primary" />
+                      Membership Application
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input placeholder="First Name" />
+                      <Input placeholder="Last Name" />
+                    </div>
+                    <Input placeholder="Email Address" type="email" />
+                    <Input placeholder="Phone Number" type="tel" />
+                    <Input placeholder="Organization (Optional)" />
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Membership Type</label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select membership type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="individual">Individual Membership - $50/year</SelectItem>
+                          <SelectItem value="family">Family Membership - $100/year</SelectItem>
+                          <SelectItem value="student">Student Membership - $25/year</SelectItem>
+                          <SelectItem value="corporate">Corporate Membership - $500/year</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">How did you hear about us?</label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an option" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="social">Social Media</SelectItem>
+                          <SelectItem value="friend">Friend/Family</SelectItem>
+                          <SelectItem value="event">Event/Workshop</SelectItem>
+                          <SelectItem value="website">Website</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Textarea placeholder="Why do you want to become a member? What are your interests or how would you like to contribute?" rows={4} />
+
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="newsletter" />
+                        <label htmlFor="newsletter" className="text-sm">Subscribe to our newsletter</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="events" />
+                        <label htmlFor="events" className="text-sm">Notify me about upcoming events</label>
+                      </div>
+                    </div>
+
+                    <Button className="w-full" size="lg">
+                      <Users className="w-4 h-4 mr-2" />
+                      Join as Member
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-6">
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle>Membership Benefits</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3">
+                        {membershipBenefits.map((benefit, index) => (
+                          <li key={index} className="flex items-start">
+                            <ArrowRight className="w-4 h-4 mr-2 mt-0.5 text-primary flex-shrink-0" />
+                            <span className="text-sm">{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card bg-primary text-primary-foreground">
+                    <CardContent className="p-6 text-center">
+                      <Heart className="w-12 h-12 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold mb-2">Make a Difference</h3>
+                      <p className="text-primary-foreground/90">
+                        As a member, you're not just supporting our cause—you're actively shaping it. 
+                        Your voice matters in our mission to create positive change.
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </section>
+
+      <Footer />
+      <Chatbot />
+    </div>
+  );
+};
+
+export default GetInvolved;
