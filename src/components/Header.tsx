@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Heart, Users, Calendar, Briefcase, Mail, Home, Info } from "lucide-react";
+import { Menu, Heart, Users, Calendar, Briefcase, Mail, Home, Info, HelpCircle } from "lucide-react";
 import charityLogo from "@/assets/charity-z-logo.jpg";
 
 const Header = () => {
@@ -13,6 +13,7 @@ const Header = () => {
     { name: "About", href: "/about", icon: Info },
     { name: "Projects", href: "/projects", icon: Briefcase },
     { name: "Events", href: "/events", icon: Calendar },
+    { name: "FAQ", href: "/faq", icon: HelpCircle },
     { name: "Get Involved", href: "/get-involved", icon: Users },
     { name: "Contact", href: "/contact", icon: Mail },
   ];

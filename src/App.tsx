@@ -9,6 +9,7 @@ import Projects from "./pages/Projects";
 import Events from "./pages/Events";
 import GetInvolved from "./pages/GetInvolved";
 import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/get-involved" element={<GetInvolved />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/donate" element={<GetInvolved />} />
