@@ -4,6 +4,7 @@ import AboutSection from "@/components/AboutSection";
 import ProjectsSection from "@/components/ProjectsSection";
 import GetInvolvedSection from "@/components/GetInvolvedSection";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
         <GetInvolvedSection />
       </main>
       <Footer />
+      <Chatbot />
     </div>
   );
 };
