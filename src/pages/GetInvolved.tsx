@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Chatbot from "@/components/Chatbot";
+import DonationForm from "@/components/DonationForm";
+import DonorDashboard from "@/components/DonorDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, Users, Briefcase, CreditCard, Calendar, Mail, Phone, MapPin, ArrowRight, Shield, Award } from "lucide-react";
+import { Heart, Users, Briefcase, CreditCard, Calendar, Mail, Phone, MapPin, ArrowRight, Shield, Award, BarChart3 } from "lucide-react";
 import volunteersImage from "@/assets/volunteers-helping.jpg";
 
 const GetInvolved = () => {
@@ -100,103 +102,32 @@ const GetInvolved = () => {
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-12">
-                <Card className="shadow-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Heart className="w-5 h-5 mr-2 text-primary" />
-                      Donation Form
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Donation Amount</label>
-                      <div className="grid grid-cols-3 gap-2 mb-4">
-                        {donationAmounts.map(amount => (
-                          <Button key={amount} variant="outline" className="text-sm">
-                            ${amount}
-                          </Button>
-                        ))}
-                      </div>
-                      <Input placeholder="Custom amount" type="number" />
-                    </div>
+              <div className="grid lg:grid-cols-3 gap-8">
+                {/* Donation Form */}
+                <div className="lg:col-span-2">
+                  <DonationForm />
+                </div>
 
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Donation Type</label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select donation type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="one-time">One-time donation</SelectItem>
-                            <SelectItem value="monthly">Monthly recurring</SelectItem>
-                            <SelectItem value="quarterly">Quarterly recurring</SelectItem>
-                            <SelectItem value="annual">Annual recurring</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Designate Your Gift</label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Where it's needed most" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="general">Where it's needed most</SelectItem>
-                            <SelectItem value="water">Clean Water Projects</SelectItem>
-                            <SelectItem value="education">Education Programs</SelectItem>
-                            <SelectItem value="healthcare">Healthcare Initiatives</SelectItem>
-                            <SelectItem value="emergency">Emergency Relief</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="font-medium">Donor Information</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="First Name" />
-                        <Input placeholder="Last Name" />
-                      </div>
-                      <Input placeholder="Email Address" type="email" />
-                      <Input placeholder="Phone Number" type="tel" />
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="anonymous" />
-                      <label htmlFor="anonymous" className="text-sm">Make this donation anonymous</label>
-                    </div>
-
-                    <Button className="w-full" size="lg">
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Donate Securely
-                    </Button>
-
-                    <div className="text-center text-sm text-muted-foreground">
-                      <Shield className="w-4 h-4 inline mr-1" />
-                      100% secure checkout • Tax-deductible
-                    </div>
-                  </CardContent>
-                </Card>
-
+                {/* Impact & Information */}
                 <div className="space-y-6">
                   <Card className="shadow-card">
                     <CardContent className="p-6">
-                      <h3 className="font-semibold mb-4">Your Impact</h3>
+                      <h3 className="font-semibold mb-4 flex items-center">
+                        <BarChart3 className="w-4 h-4 mr-2 text-primary" />
+                        Your Impact
+                      </h3>
                       <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span>$25 provides clean water for 1 person for 1 year</span>
+                        <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
+                          <span className="text-sm">$25 provides clean water for 1 person for 1 year</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>$50 supplies school materials for 1 child</span>
+                        <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
+                          <span className="text-sm">$50 supplies school materials for 1 child</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>$100 funds medical care for 5 families</span>
+                        <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
+                          <span className="text-sm">$100 funds medical care for 5 families</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span>$250 supports a teacher's salary for 1 month</span>
+                        <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
+                          <span className="text-sm">$250 supports a teacher's salary for 1 month</span>
                         </div>
                       </div>
                     </CardContent>
@@ -206,18 +137,35 @@ const GetInvolved = () => {
                     <CardContent className="p-6">
                       <h3 className="font-semibold mb-4">Other Ways to Give</h3>
                       <div className="space-y-4">
-                        <div>
+                        <div className="border-l-4 border-primary pl-4">
                           <h4 className="font-medium">Corporate Sponsorship</h4>
                           <p className="text-sm text-muted-foreground">Partner with us for large-scale impact and CSR opportunities.</p>
                         </div>
-                        <div>
+                        <div className="border-l-4 border-primary pl-4">
                           <h4 className="font-medium">Planned Giving</h4>
-                          <p className="text-sm text-muted-foreground">Include Charity Z in your will or estate planning.</p>
+                          <p className="text-sm text-muted-foreground">Include CharityZ in your will or estate planning.</p>
                         </div>
-                        <div>
-                          <h4 className="font-medium">Stock Donations</h4>
-                          <p className="text-sm text-muted-foreground">Donate appreciated securities for tax advantages.</p>
+                        <div className="border-l-4 border-primary pl-4">
+                          <h4 className="font-medium">International Transfers</h4>
+                          <p className="text-sm text-muted-foreground">We accept donations from anywhere in the world via secure payment processing.</p>
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card bg-gradient-to-br from-primary/5 to-secondary/5">
+                    <CardContent className="p-6 text-center">
+                      <Shield className="w-8 h-8 mx-auto mb-3 text-primary" />
+                      <h3 className="font-semibold mb-2">100% Secure Donations</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        All transactions are processed securely through Paystack with end-to-end encryption.
+                      </p>
+                      <div className="flex justify-center items-center space-x-2 text-xs text-muted-foreground">
+                        <span>🌍 Global Payments</span>
+                        <span>•</span>
+                        <span>📱 Mobile Money</span>
+                        <span>•</span>
+                        <span>💳 All Cards</span>
                       </div>
                     </CardContent>
                   </Card>
