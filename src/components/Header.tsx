@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Heart, Users, Calendar, Briefcase, Mail, Home, Info, HelpCircle } from "lucide-react";
-import charityLogo from "@/assets/charity-z-logo.jpg";
+import charityLogo from "@/assets/charity-z-official-logo.png";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,13 +21,16 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <Link to="/" className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center space-x-3">
           <img 
             src={charityLogo} 
-            alt="Charity Z Logo" 
-            className="h-10 w-10 object-contain"
+            alt="CharityZ Logo" 
+            className="h-12 w-12 object-contain"
           />
-          <span className="font-bold text-xl">Charity Z</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-xl">CharityZ</span>
+            <span className="text-xs text-muted-foreground">Supporting The Needy, Nurturing Dreams</span>
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
