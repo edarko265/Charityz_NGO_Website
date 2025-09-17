@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Heart, Users, Calendar, Briefcase, Mail, Home, Info, HelpCircle } from "lucide-react";
+import { Menu, Heart, Users, Calendar, Briefcase, Mail, Home, Info, HelpCircle, LogIn, LogOut, User } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 import charityLogo from "@/assets/charity-z-official-logo.png";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -52,6 +54,25 @@ const Header = () => {
             Donate Now
           </Button>
 
+          {user ? (
+            <div className="hidden md:flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground">
+                Welcome, {user.user_metadata?.first_name || user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={signOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="hidden md:inline-flex">
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
+            </Link>
+          )}
+
           {/* Mobile Navigation */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
@@ -79,6 +100,26 @@ const Header = () => {
                   <Heart className="w-4 h-4 mr-2" />
                   Donate Now
                 </Button>
+
+                {user ? (
+                  <div className="space-y-2 pt-4 border-t">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <User className="w-4 h-4" />
+                      <span>{user.user_metadata?.first_name || user.email}</span>
+                    </div>
+                    <Button variant="outline" className="w-full" onClick={signOut}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full mt-2">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Sign In
+                    </Button>
+                  </Link>
+                )}
               </div>
             </SheetContent>
           </Sheet>
