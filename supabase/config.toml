@@ -1,1 +1,10 @@
 project_id = "xyghxlddqfvcgxatbuxk"
+
+[functions.send-contact-email]
+verify_jwt = false
+
+[functions.ai-chatbot]
+verify_jwt = false
+
+[functions.donation-receipt-generator]
+verify_jwt = false
