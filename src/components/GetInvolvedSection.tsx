@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Users, Briefcase, Mail, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const GetInvolvedSection = () => {
   const ways = [
@@ -9,6 +10,7 @@ const GetInvolvedSection = () => {
       title: "Become a Donor",
       description: "Support our mission with a one-time gift or monthly donation. Every contribution makes a difference.",
       action: "Donate Now",
+      link: "/donate",
       color: "bg-primary text-primary-foreground",
       features: [
         "Tax-deductible donations",
@@ -22,6 +24,7 @@ const GetInvolvedSection = () => {
       title: "Join as a Member",
       description: "Become part of our community and help shape our initiatives through active participation.",
       action: "Become a Member",
+      link: "/membership",
       color: "bg-charity-brown text-white",
       features: [
         "Monthly newsletters",
@@ -35,6 +38,7 @@ const GetInvolvedSection = () => {
       title: "Volunteer with Us",
       description: "Share your skills and time to directly impact communities and help us achieve our goals.",
       action: "Start Volunteering",
+      link: "/volunteer",
       color: "bg-green-600 text-white",
       features: [
         "Flexible scheduling",
@@ -82,9 +86,11 @@ const GetInvolvedSection = () => {
                     ))}
                   </ul>
                   
-                  <Button className="w-full mt-6">
-                    {way.action}
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                  <Button asChild className="w-full mt-6">
+                    <Link to={way.link}>
+                      {way.action}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -99,9 +105,11 @@ const GetInvolvedSection = () => {
             Our team is here to help you find the best way to get involved. 
             Reach out to learn more about our programs and opportunities.
           </p>
-          <Button variant="outline" size="lg">
-            <Mail className="w-4 h-4 mr-2" />
-            Contact Us
+          <Button asChild variant="outline" size="lg">
+            <Link to="/contact">
+              <Mail className="w-4 h-4 mr-2" />
+              Contact Us
+            </Link>
           </Button>
         </div>
       </div>

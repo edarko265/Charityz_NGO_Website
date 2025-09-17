@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, MapPin, Users, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
 import projectsImage from "@/assets/projects-impact.jpg";
 import volunteersImage from "@/assets/volunteers-helping.jpg";
 
@@ -126,9 +127,11 @@ const ProjectsSection = () => {
         </div>
 
         <div className="text-center">
-          <Button size="lg" variant="outline">
-            View All Projects
-            <ArrowRight className="w-4 h-4 ml-2" />
+          <Button asChild size="lg" variant="outline">
+            <Link to="/projects">
+              View All Projects
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
           </Button>
         </div>
       </div>
