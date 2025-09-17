@@ -8,6 +8,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input sanitization helper
+function sanitizeMessage(message: string): string {
+  if (typeof message !== 'string') return '';
+  // Limit message length and remove potentially harmful content
+  return message.trim().slice(0, 2000).replace(/[<>]/g, '');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -16,7 +23,23 @@ serve(async (req) => {
   try {
     const { message } = await req.json();
 
-    console.log("Received chatbot message:", message);
+    // Input validation and sanitization
+    const sanitizedMessage = sanitizeMessage(message);
+    
+    if (!sanitizedMessage) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid or empty message',
+          reply: "Please provide a valid message to get assistance." 
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    console.log("Received chatbot message:", sanitizedMessage);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -41,7 +64,7 @@ serve(async (req) => {
             Be friendly, helpful, and encourage users to get involved with CharityZ's mission.
             Keep responses concise but informative.` 
           },
-          { role: 'user', content: message }
+          { role: 'user', content: sanitizedMessage }
         ],
         max_tokens: 500,
         temperature: 0.7,
