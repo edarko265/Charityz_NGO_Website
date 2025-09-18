@@ -58,6 +58,12 @@ const Header = () => {
 
           {user ? (
             <div className="hidden md:flex items-center space-x-2">
+              <Link to="/dashboard">
+                <Button variant="outline" size="sm">
+                  <User className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
               {isAdmin && (
                 <Link to="/admin">
                   <Button variant="outline" size="sm">
@@ -117,6 +123,12 @@ const Header = () => {
                       <User className="w-4 h-4" />
                       <span>{user.user_metadata?.first_name || user.email}</span>
                     </div>
+                     <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" className="w-full mb-2">
+                        <User className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
                     {isAdmin && (
                       <Link to="/admin" onClick={() => setIsOpen(false)}>
                         <Button variant="outline" className="w-full mb-2">
