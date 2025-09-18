@@ -316,9 +316,9 @@ const AdminDashboard = () => {
               <DollarSign className="h-5 w-5 text-green-600" />
               <h3 className="font-semibold text-sm text-muted-foreground">Total Raised</h3>
             </div>
-            <p className="text-2xl font-bold mt-2">${stats.totalAmount.toFixed(2)}</p>
+            <p className="text-2xl font-bold mt-2">GH₵{stats.totalAmount.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              This month: ${stats.thisMonthAmount.toFixed(2)}
+              This month: GH₵{stats.thisMonthAmount.toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -331,7 +331,7 @@ const AdminDashboard = () => {
             </div>
             <p className="text-2xl font-bold mt-2">{stats.totalDonors}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Avg: ${stats.avgDonation.toFixed(2)}
+              Avg: GH₵{stats.avgDonation.toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -430,7 +430,7 @@ const AdminDashboard = () => {
                           <p className="text-sm text-muted-foreground">{donation.donor_email}</p>
                         </div>
                         <div>
-                          <p className="font-semibold">${donation.amount} {donation.currency}</p>
+                          <p className="font-semibold">GH₵{donation.amount} {donation.currency}</p>
                           <p className="text-sm text-muted-foreground capitalize">
                             {donation.donation_type}
                           </p>

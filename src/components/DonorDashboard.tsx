@@ -177,7 +177,7 @@ const DonorDashboard: React.FC<DonorDashboardProps> = ({ donorEmail }) => {
               <Heart className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-sm text-muted-foreground">Total Donated</h3>
             </div>
-            <p className="text-2xl font-bold mt-2">${stats.totalDonated.toFixed(2)}</p>
+            <p className="text-2xl font-bold mt-2">GH₵{stats.totalDonated.toFixed(2)}</p>
           </CardContent>
         </Card>
 
@@ -197,7 +197,7 @@ const DonorDashboard: React.FC<DonorDashboardProps> = ({ donorEmail }) => {
               <TrendingUp className="h-5 w-5 text-primary" />
               <h3 className="font-semibold text-sm text-muted-foreground">Average Donation</h3>
             </div>
-            <p className="text-2xl font-bold mt-2">${stats.averageDonation.toFixed(2)}</p>
+            <p className="text-2xl font-bold mt-2">GH₵{stats.averageDonation.toFixed(2)}</p>
           </CardContent>
         </Card>
 
@@ -240,7 +240,7 @@ const DonorDashboard: React.FC<DonorDashboardProps> = ({ donorEmail }) => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold">${donation.amount.toFixed(2)} {donation.currency}</p>
+                        <p className="font-semibold">GH₵{donation.amount.toFixed(2)} {donation.currency}</p>
                         <p className="text-sm text-muted-foreground capitalize">
                           {donation.designation.replace('_', ' ')} fund
                         </p>

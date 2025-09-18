@@ -188,7 +188,7 @@ const DonationForm = () => {
     if (!formData.amount || formData.amount < 5) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter a donation amount of at least $5.",
+        description: "Please enter a donation amount of at least GH₵5.",
         variant: "destructive"
       })
       return
@@ -212,7 +212,7 @@ const DonationForm = () => {
         donor_email: formData.donorEmail,
         donor_phone: formData.donorPhone || null,
         amount: formData.amount,
-        currency: 'USD',
+        currency: 'GHS',
         donation_type: formData.donationType,
         designation: formData.designation,
         anonymous: formData.anonymous,
@@ -266,7 +266,7 @@ const DonationForm = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Amount Selection */}
             <div className="space-y-4">
-              <Label className="text-base font-semibold">Donation Amount (USD)</Label>
+              <Label className="text-base font-semibold">Donation Amount (GHS)</Label>
               <div className="grid grid-cols-3 gap-3">
                 {donationAmounts.map((amount) => (
                   <Button
@@ -276,7 +276,7 @@ const DonationForm = () => {
                     onClick={() => handleAmountSelect(amount)}
                     className="h-12"
                   >
-                    ${amount}
+                    GH₵{amount}
                   </Button>
                 ))}
               </div>
@@ -400,7 +400,7 @@ const DonationForm = () => {
                 <h3 className="font-semibold">Donation Summary</h3>
                 <div className="flex justify-between">
                   <span>Amount:</span>
-                  <span className="font-semibold">${finalAmount.toFixed(2)} USD</span>
+                  <span className="font-semibold">GH₵{finalAmount.toFixed(2)} GHS</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Frequency:</span>
@@ -421,7 +421,7 @@ const DonationForm = () => {
               disabled={isLoading || !finalAmount || finalAmount < 5 || !paystackKey}
             >
               <CreditCard className="h-4 w-4 mr-2" />
-              {isLoading ? 'Processing...' : `Donate $${finalAmount.toFixed(2)}`}
+              {isLoading ? 'Processing...' : `Donate GH₵${finalAmount.toFixed(2)}`}
             </Button>
           </form>
         </CardContent>
