@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     totalUsers: 0,
     activePosts: 0,
     pendingTasks: 0,
-    totalDonations: '$0'
+    totalDonations: 'GH₵0'
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                      <p className="text-sm">Donation received: $500</p>
+                      <p className="text-sm">Donation received: GH₵2,000</p>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>

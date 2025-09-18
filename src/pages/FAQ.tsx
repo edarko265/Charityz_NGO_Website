@@ -39,7 +39,7 @@ const FAQ = () => {
         },
         {
           question: "How do I track the impact of my donation?",
-          answer: "We provide quarterly impact reports to all donors showing exactly how contributions are being used. You'll receive project updates, photos from the field, and measurable outcomes. Major donors ($1,000+) receive personalized impact reports and invitations to visit project sites."
+          answer: "We provide quarterly impact reports to all donors showing exactly how contributions are being used. You'll receive project updates, photos from the field, and measurable outcomes. Major donors (GH₵4,000+) receive personalized impact reports and invitations to visit project sites."
         }
       ]
     },
@@ -113,7 +113,7 @@ const FAQ = () => {
         },
         {
           question: "How much does membership cost?",
-          answer: "Individual membership is $50/year, family membership is $100/year, student membership is $25/year, and corporate membership is $500/year. Membership fees are tax-deductible and help support our core operations and member benefits."
+          answer: "Individual membership is GH₵200/year, family membership is GH₵400/year, student membership is GH₵100/year, and corporate membership is GH₵2000/year. Membership fees are tax-deductible and help support our core operations and member benefits."
         },
         {
           question: "What voting rights do members have?",

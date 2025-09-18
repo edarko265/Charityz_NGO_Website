@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const GetInvolved = () => {
   const { toast } = useToast();
-  const donationAmounts = [25, 50, 100, 250, 500, 1000];
+  const donationAmounts = [100, 200, 400, 1000, 2000, 4000];
 
   // Volunteer form state
   const [volunteerForm, setVolunteerForm] = useState({
@@ -285,16 +285,16 @@ const GetInvolved = () => {
                       </h3>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
-                          <span className="text-sm">$25 provides clean water for 1 person for 1 year</span>
+                          <span className="text-sm">GH₵100 provides clean water for 1 person for 1 year</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
-                          <span className="text-sm">$50 supplies school materials for 1 child</span>
+                          <span className="text-sm">GH₵200 supplies school materials for 1 child</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
-                          <span className="text-sm">$100 funds medical care for 5 families</span>
+                          <span className="text-sm">GH₵400 funds medical care for 5 families</span>
                         </div>
                         <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
-                          <span className="text-sm">$250 supports a teacher's salary for 1 month</span>
+                          <span className="text-sm">GH₵1,000 supports a teacher's salary for 1 month</span>
                         </div>
                       </div>
                     </CardContent>
