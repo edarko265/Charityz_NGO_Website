@@ -430,7 +430,7 @@ const AdminDashboard = () => {
                           <p className="text-sm text-muted-foreground">{donation.donor_email}</p>
                         </div>
                         <div>
-                          <p className="font-semibold">GH₵{donation.amount} {donation.currency}</p>
+                          <p className="font-semibold">GH₵{donation.amount}</p>
                           <p className="text-sm text-muted-foreground capitalize">
                             {donation.donation_type}
                           </p>
