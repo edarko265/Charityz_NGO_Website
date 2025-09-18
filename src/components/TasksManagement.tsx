@@ -15,11 +15,11 @@ interface Task {
   id: string;
   title: string;
   description: string;
-  assigned_to: string;
-  assigned_volunteer_name: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  priority: 'low' | 'medium' | 'high';
-  due_date: string;
+  assigned_to: string | null;
+  assigned_to_name: string | null;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  due_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,9 +40,9 @@ const TasksManagement = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    assigned_to: '',
-    status: 'pending' as 'pending' | 'in-progress' | 'completed',
-    priority: 'medium' as 'low' | 'medium' | 'high',
+    assigned_to: null as string | null,
+    status: 'pending' as 'pending' | 'in_progress' | 'completed' | 'cancelled',
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     due_date: '',
   });
   const { toast } = useToast();
@@ -61,8 +61,8 @@ const TasksManagement = () => {
           title: 'Organize Food Distribution',
           description: 'Coordinate the weekly food distribution event at the community center.',
           assigned_to: 'volunteer-1',
-          assigned_volunteer_name: 'John Smith',
-          status: 'in-progress',
+          assigned_to_name: 'John Smith',
+          status: 'in_progress' as const,
           priority: 'high',
           due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           created_at: new Date().toISOString(),
@@ -73,7 +73,7 @@ const TasksManagement = () => {
           title: 'Update Website Content',
           description: 'Review and update the volunteer section on the website with new information.',
           assigned_to: 'volunteer-2',
-          assigned_volunteer_name: 'Jane Doe',
+          assigned_to_name: 'Jane Doe',
           status: 'pending',
           priority: 'medium',
           due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -139,7 +139,7 @@ const TasksManagement = () => {
         const newTask: Task = {
           id: Date.now().toString(),
           ...formData,
-          assigned_volunteer_name: selectedVolunteer ? `${selectedVolunteer.first_name} ${selectedVolunteer.last_name}` : 'Unassigned',
+          assigned_to_name: selectedVolunteer ? `${selectedVolunteer.first_name} ${selectedVolunteer.last_name}` : null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         };
@@ -185,11 +185,18 @@ const TasksManagement = () => {
 
   const handleDelete = async (taskId: string) => {
     try {
-      setTasks(tasks.filter(t => t.id !== taskId));
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) throw error;
+
       toast({
         title: 'Success',
         description: 'Task deleted successfully',
       });
+      fetchTasks(); // Refresh the tasks list
     } catch (error) {
       console.error('Error deleting task:', error);
       toast({
@@ -410,7 +417,7 @@ const TasksManagement = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-1">
                     <User className="h-3 w-3" />
-                    <span>Assigned to: {task.assigned_volunteer_name}</span>
+                    <span>Assigned to: {task.assigned_to_name || 'Unassigned'}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Calendar className="h-3 w-3" />

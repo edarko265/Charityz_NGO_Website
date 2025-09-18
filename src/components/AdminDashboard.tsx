@@ -20,7 +20,7 @@ import {
   UserCheck,
   Mail
 } from "lucide-react"
-import { supabase, type Donation } from "@/lib/supabase"
+import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
 interface AdminStats {
@@ -53,6 +53,22 @@ interface Member {
   membership_type: string
   status: string
   created_at: string
+}
+
+interface Donation {
+  id: string;
+  donor_name: string;
+  donor_email: string;
+  donor_phone?: string;
+  amount: number;
+  currency: string;
+  donation_type: 'one-time' | 'monthly' | 'quarterly' | 'annual';
+  designation: string;
+  anonymous: boolean;
+  payment_reference: string;
+  payment_status: 'pending' | 'successful' | 'failed';
+  created_at: string;
+  updated_at: string;
 }
 
 const AdminDashboard = () => {
@@ -107,7 +123,11 @@ const AdminDashboard = () => {
       .limit(50)
 
     if (error) throw error
-    setDonations(data || [])
+      setDonations(data?.map(d => ({ 
+        ...d, 
+        donation_type: d.donation_type as any,
+        payment_status: d.payment_status as any 
+      })) || []);
   }
 
   const fetchVolunteers = async () => {

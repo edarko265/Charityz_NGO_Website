@@ -4,8 +4,24 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Calendar, Download, Heart, TrendingUp, Gift, Award } from "lucide-react"
-import { supabase, type Donation } from "@/lib/supabase"
+import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+
+interface Donation {
+  id: string;
+  donor_name: string;
+  donor_email: string;
+  donor_phone?: string;
+  amount: number;
+  currency: string;
+  donation_type: 'one-time' | 'monthly' | 'quarterly' | 'annual';
+  designation: string;
+  anonymous: boolean;
+  payment_reference: string;
+  payment_status: 'pending' | 'successful' | 'failed';
+  created_at: string;
+  updated_at: string;
+}
 
 interface DonorStats {
   totalDonated: number
@@ -44,8 +60,16 @@ const DonorDashboard: React.FC<DonorDashboardProps> = ({ donorEmail }) => {
 
       if (error) throw error
 
-      setDonations(data || [])
-      calculateStats(data || [])
+      setDonations(data?.map(d => ({ 
+        ...d, 
+        donation_type: d.donation_type as any,
+        payment_status: d.payment_status as any 
+      })) || [])
+      calculateStats(data?.map(d => ({ 
+        ...d, 
+        donation_type: d.donation_type as any,
+        payment_status: d.payment_status as any 
+      })) || [])
     } catch (error) {
       console.error('Error fetching donations:', error)
       toast({

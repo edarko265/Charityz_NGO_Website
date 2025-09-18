@@ -40,32 +40,19 @@ const PostsManagement = () => {
 
   const fetchPosts = async () => {
     try {
-      // For now, we'll create mock data since we don't have a posts table yet
-      // In a real implementation, you'd fetch from Supabase
-      const mockPosts: Post[] = [
-        {
-          id: '1',
-          title: 'Community Outreach Program Launch',
-          content: 'We are excited to announce the launch of our new community outreach program...',
-          excerpt: 'New community outreach program to help local families in need.',
-          published: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          author_name: 'Admin User',
-        },
-        {
-          id: '2',
-          title: 'Volunteer Training Workshop',
-          content: 'Join us for our monthly volunteer training workshop...',
-          excerpt: 'Monthly training to prepare new volunteers for their roles.',
-          published: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          author_name: 'Admin User',
-        },
-      ];
-      
-      setPosts(mockPosts);
+      const { data: postsData, error } = await supabase
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedPosts: Post[] = (postsData || []).map(post => ({
+        ...post,
+        author_name: 'Admin User' // We'll get this from profiles later
+      }));
+
+      setPosts(formattedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
@@ -84,26 +71,39 @@ const PostsManagement = () => {
     try {
       if (editingPost) {
         // Update existing post
-        const updatedPost = {
-          ...editingPost,
-          ...formData,
-          updated_at: new Date().toISOString(),
-        };
-        setPosts(posts.map(p => p.id === editingPost.id ? updatedPost : p));
+        const { error } = await supabase
+          .from('posts')
+          .update({
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt,
+            published: formData.published,
+          })
+          .eq('id', editingPost.id);
+
+        if (error) throw error;
+
         toast({
           title: 'Success',
           description: 'Post updated successfully',
         });
       } else {
         // Create new post
-        const newPost: Post = {
-          id: Date.now().toString(),
-          ...formData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          author_name: 'Admin User',
-        };
-        setPosts([newPost, ...posts]);
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) throw new Error('User not authenticated');
+
+        const { error } = await supabase
+          .from('posts')
+          .insert({
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt,
+            published: formData.published,
+            author_id: userData.user.id,
+          });
+
+        if (error) throw error;
+
         toast({
           title: 'Success',
           description: 'Post created successfully',
@@ -113,6 +113,7 @@ const PostsManagement = () => {
       setIsDialogOpen(false);
       setEditingPost(null);
       setFormData({ title: '', content: '', excerpt: '', published: false });
+      fetchPosts(); // Refresh the posts list
     } catch (error) {
       console.error('Error saving post:', error);
       toast({
@@ -136,11 +137,18 @@ const PostsManagement = () => {
 
   const handleDelete = async (postId: string) => {
     try {
-      setPosts(posts.filter(p => p.id !== postId));
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) throw error;
+
       toast({
         title: 'Success',
         description: 'Post deleted successfully',
       });
+      fetchPosts(); // Refresh the posts list
     } catch (error) {
       console.error('Error deleting post:', error);
       toast({
