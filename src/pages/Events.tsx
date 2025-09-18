@@ -21,7 +21,7 @@ const Events = () => {
       description: "Join us for an elegant evening of fundraising, entertainment, and community celebration.",
       image: volunteersImage,
       type: "fundraising",
-      price: 150,
+      price: 600,
       capacity: 200,
       registered: 145,
       highlights: [
@@ -59,7 +59,7 @@ const Events = () => {
       description: "Learn about global water challenges and how you can make a difference.",
       image: volunteersImage,
       type: "educational",
-      price: 25,
+      price: 100,
       capacity: 50,
       registered: 32,
       highlights: [
@@ -78,7 +78,7 @@ const Events = () => {
       description: "Run for a cause! All proceeds go directly to our clean water initiatives.",
       image: projectsImage,
       type: "fundraising",
-      price: 35,
+      price: 140,
       capacity: 300,
       registered: 156,
       highlights: [
@@ -99,7 +99,7 @@ const Events = () => {
       description: "A magical evening of music that raised GH₵100,000 for our education programs.",
       image: volunteersImage,
       type: "fundraising",
-      raised: 25000,
+      raised: 100000,
       attendance: 400
     },
     {
@@ -121,7 +121,7 @@ const Events = () => {
       description: "Perfect weather and generous sponsors helped us raise GH₵160,000.",
       image: volunteersImage,
       type: "fundraising",
-      raised: 40000,
+      raised: 160000,
       attendance: 120
     }
   ];
@@ -249,7 +249,7 @@ const Events = () => {
                           {event.price > 0 && (
                             <div className="flex items-center">
                               <DollarSign className="w-4 h-4 mr-1" />
-                              <span>${event.price}</span>
+                              <span>GH₵{event.price}</span>
                             </div>
                           )}
                         </div>
@@ -329,7 +329,7 @@ const Events = () => {
                                 <DollarSign className="w-4 h-4 mr-1" />
                                 Funds Raised
                               </span>
-                              <span className="font-medium text-green-600">${event.raised.toLocaleString()}</span>
+                              <span className="font-medium text-green-600">GH₵{event.raised.toLocaleString()}</span>
                             </div>
                           )}
                         </div>

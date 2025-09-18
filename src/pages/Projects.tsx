@@ -23,8 +23,8 @@ const Projects = () => {
       progress: 75,
       beneficiaries: 1200,
       startDate: "March 2024",
-      budget: 25000,
-      raised: 18750,
+      budget: 100000,
+      raised: 75000,
       description: "Building sustainable water systems including wells, pumps, and distribution networks to provide clean drinking water to remote communities.",
       image: projectsImage,
       category: "water",
@@ -49,8 +49,8 @@ const Projects = () => {
       progress: 100,
       beneficiaries: 300,
       startDate: "January 2023",
-      budget: 40000,
-      raised: 40000,
+      budget: 160000,
+      raised: 160000,
       description: "Constructed a school and provided educational resources for underprivileged children in rural Guatemala.",
       image: volunteersImage,
       category: "education",
@@ -75,8 +75,8 @@ const Projects = () => {
       progress: 25,
       beneficiaries: 2000,
       startDate: "July 2024",
-      budget: 60000,
-      raised: 15000,
+      budget: 240000,
+      raised: 60000,
       description: "Establishing a healthcare facility to serve rural communities with basic medical services, maternal care, and health education.",
       image: projectsImage,
       category: "healthcare",
@@ -101,8 +101,8 @@ const Projects = () => {
       progress: 60,
       beneficiaries: 800,
       startDate: "September 2023",
-      budget: 30000,
-      raised: 22000,
+      budget: 120000,
+      raised: 88000,
       description: "Training farmers in sustainable agriculture techniques and providing seeds, tools, and microfinance support.",
       image: volunteersImage,
       category: "agriculture",
@@ -127,8 +127,8 @@ const Projects = () => {
       progress: 100,
       beneficiaries: 1500,
       startDate: "August 2023",
-      budget: 20000,
-      raised: 20000,
+      budget: 80000,
+      raised: 80000,
       description: "Provided emergency relief including food, clean water, shelter materials, and medical aid to flood-affected communities.",
       image: projectsImage,
       category: "emergency",
@@ -280,7 +280,7 @@ const Projects = () => {
                     
                     <div className="flex items-center justify-between text-sm">
                       <span>Funding</span>
-                      <span className="font-medium">${project.raised.toLocaleString()} / ${project.budget.toLocaleString()}</span>
+                      <span className="font-medium">GH₵{project.raised.toLocaleString()} / GH₵{project.budget.toLocaleString()}</span>
                     </div>
                     <Progress value={(project.raised / project.budget) * 100} className="h-2" />
                     
