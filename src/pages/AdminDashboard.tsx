@@ -1,0 +1,168 @@
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Plus, Users, FileText, ClipboardList, BarChart } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import AdminDashboardComponent from '@/components/AdminDashboard';
+import PostsManagement from '@/components/PostsManagement';
+import TasksManagement from '@/components/TasksManagement';
+
+const AdminDashboard = () => {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your charity organization from this central hub
+          </p>
+        </div>
+
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Users
+            </TabsTrigger>
+            <TabsTrigger value="posts" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Posts
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              Tasks
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">1,234</div>
+                  <p className="text-xs text-muted-foreground">
+                    +20% from last month
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Posts</CardTitle>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">45</div>
+                  <p className="text-xs text-muted-foreground">
+                    +5 new this week
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
+                  <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">12</div>
+                  <p className="text-xs text-muted-foreground">
+                    3 due today
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Donations</CardTitle>
+                  <BarChart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">$45,231</div>
+                  <p className="text-xs text-muted-foreground">
+                    +12% from last month
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>
+                    Common administrative tasks
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create New Post
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <ClipboardList className="h-4 w-4 mr-2" />
+                    Assign New Task
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <Users className="h-4 w-4 mr-2" />
+                    Manage Users
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>
+                    Latest actions in your organization
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                      <p className="text-sm">New volunteer registration</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                      <p className="text-sm">Donation received: $500</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
+                      <p className="text-sm">Task completed by volunteer</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <AdminDashboardComponent />
+          </TabsContent>
+
+          <TabsContent value="posts">
+            <PostsManagement />
+          </TabsContent>
+
+          <TabsContent value="tasks">
+            <TasksManagement />
+          </TabsContent>
+        </Tabs>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default AdminDashboard;

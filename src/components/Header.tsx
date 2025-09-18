@@ -2,13 +2,15 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Heart, Users, Calendar, Briefcase, Mail, Home, Info, HelpCircle, LogIn, LogOut, User } from "lucide-react";
+import { Menu, Heart, Users, Calendar, Briefcase, Mail, Home, Info, HelpCircle, LogIn, LogOut, User, Settings } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
+import { useUserRole } from "@/hooks/useUserRole";
 import charityLogo from "@/assets/charity-z-official-logo.png";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { isAdmin } = useUserRole();
 
   const navigation = [
     { name: "Home", href: "/", icon: Home },
@@ -56,6 +58,14 @@ const Header = () => {
 
           {user ? (
             <div className="hidden md:flex items-center space-x-2">
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="outline" size="sm">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <span className="text-sm text-muted-foreground">
                 Welcome, {user.user_metadata?.first_name || user.email}
               </span>
@@ -107,6 +117,14 @@ const Header = () => {
                       <User className="w-4 h-4" />
                       <span>{user.user_metadata?.first_name || user.email}</span>
                     </div>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full mb-2">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin Dashboard
+                        </Button>
+                      </Link>
+                    )}
                     <Button variant="outline" className="w-full" onClick={signOut}>
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
