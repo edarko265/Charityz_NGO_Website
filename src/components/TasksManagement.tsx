@@ -24,16 +24,17 @@ interface Task {
   updated_at: string;
 }
 
-interface Volunteer {
+interface Assignee {
   id: string;
   first_name: string;
   last_name: string;
   email: string;
+  type: 'volunteer' | 'member';
 }
 
 const TasksManagement = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -49,40 +50,57 @@ const TasksManagement = () => {
 
   useEffect(() => {
     fetchTasks();
-    fetchVolunteers();
+    fetchAssignees();
   }, []);
 
   const fetchTasks = async () => {
     try {
-      // For now, we'll create mock data since we don't have a tasks table yet
-      const mockTasks: Task[] = [
-        {
-          id: '1',
-          title: 'Organize Food Distribution',
-          description: 'Coordinate the weekly food distribution event at the community center.',
-          assigned_to: 'volunteer-1',
-          assigned_to_name: 'John Smith',
-          status: 'in_progress' as const,
-          priority: 'high',
-          due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          title: 'Update Website Content',
-          description: 'Review and update the volunteer section on the website with new information.',
-          assigned_to: 'volunteer-2',
-          assigned_to_name: 'Jane Doe',
-          status: 'pending',
-          priority: 'medium',
-          due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ];
-      
-      setTasks(mockTasks);
+      const { data, error } = await supabase
+        .from('tasks')
+        .select(`
+          id,
+          title,
+          description,
+          assigned_to,
+          status,
+          priority,
+          due_date,
+          created_at,
+          updated_at
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Format the tasks with assignee names
+      const tasksWithNames = await Promise.all(
+        (data || []).map(async (task) => {
+          let assigned_to_name = null;
+          
+          if (task.assigned_to) {
+            // Try to find in volunteers first
+            const volunteer = assignees.find(a => a.id === task.assigned_to && a.type === 'volunteer');
+            if (volunteer) {
+              assigned_to_name = `${volunteer.first_name} ${volunteer.last_name}`;
+            } else {
+              // Try to find in members
+              const member = assignees.find(a => a.id === task.assigned_to && a.type === 'member');
+              if (member) {
+                assigned_to_name = `${member.first_name} ${member.last_name}`;
+              }
+            }
+          }
+          
+          return {
+            ...task,
+            assigned_to_name,
+            status: task.status as 'pending' | 'in_progress' | 'completed' | 'cancelled',
+            priority: task.priority as 'low' | 'medium' | 'high' | 'urgent'
+          };
+        })
+      );
+
+      setTasks(tasksWithNames);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -93,23 +111,38 @@ const TasksManagement = () => {
     }
   };
 
-  const fetchVolunteers = async () => {
+  const fetchAssignees = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch volunteers
+      const { data: volunteersData, error: volunteersError } = await supabase
         .from('volunteers')
         .select('id, first_name, last_name, email')
         .eq('status', 'approved');
 
-      if (error) throw error;
+      if (volunteersError) throw volunteersError;
 
-      setVolunteers(data || []);
+      // Fetch members
+      const { data: membersData, error: membersError } = await supabase
+        .from('members')
+        .select('id, first_name, last_name, email')
+        .eq('status', 'active');
+
+      if (membersError) throw membersError;
+
+      // Combine volunteers and members with type indicator
+      const combinedAssignees: Assignee[] = [
+        ...(volunteersData || []).map(v => ({ ...v, type: 'volunteer' as const })),
+        ...(membersData || []).map(m => ({ ...m, type: 'member' as const }))
+      ];
+
+      setAssignees(combinedAssignees);
     } catch (error) {
-      console.error('Error fetching volunteers:', error);
-      // Mock data fallback
-      setVolunteers([
-        { id: 'volunteer-1', first_name: 'John', last_name: 'Smith', email: 'john@example.com' },
-        { id: 'volunteer-2', first_name: 'Jane', last_name: 'Doe', email: 'jane@example.com' },
-      ]);
+      console.error('Error fetching assignees:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch volunteers and members',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -119,31 +152,43 @@ const TasksManagement = () => {
     e.preventDefault();
     
     try {
-      const selectedVolunteer = volunteers.find(v => v.id === formData.assigned_to);
-      
       if (editingTask) {
         // Update existing task
-        const updatedTask = {
-          ...editingTask,
-          ...formData,
-          assigned_volunteer_name: selectedVolunteer ? `${selectedVolunteer.first_name} ${selectedVolunteer.last_name}` : 'Unassigned',
-          updated_at: new Date().toISOString(),
-        };
-        setTasks(tasks.map(t => t.id === editingTask.id ? updatedTask : t));
+        const { error } = await supabase
+          .from('tasks')
+          .update({
+            title: formData.title,
+            description: formData.description,
+            assigned_to: formData.assigned_to || null,
+            status: formData.status,
+            priority: formData.priority,
+            due_date: formData.due_date || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingTask.id);
+
+        if (error) throw error;
+
         toast({
           title: 'Success',
           description: 'Task updated successfully',
         });
       } else {
         // Create new task
-        const newTask: Task = {
-          id: Date.now().toString(),
-          ...formData,
-          assigned_to_name: selectedVolunteer ? `${selectedVolunteer.first_name} ${selectedVolunteer.last_name}` : null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        setTasks([newTask, ...tasks]);
+        const { error } = await supabase
+          .from('tasks')
+          .insert({
+            title: formData.title,
+            description: formData.description,
+            assigned_to: formData.assigned_to || null,
+            assigned_by: (await supabase.auth.getUser()).data.user?.id,
+            status: formData.status,
+            priority: formData.priority,
+            due_date: formData.due_date || null,
+          });
+
+        if (error) throw error;
+
         toast({
           title: 'Success',
           description: 'Task created successfully',
@@ -155,11 +200,14 @@ const TasksManagement = () => {
       setFormData({
         title: '',
         description: '',
-        assigned_to: '',
+        assigned_to: null,
         status: 'pending',
         priority: 'medium',
         due_date: '',
       });
+      
+      // Refresh tasks list
+      await fetchTasks();
     } catch (error) {
       console.error('Error saving task:', error);
       toast({
@@ -196,7 +244,7 @@ const TasksManagement = () => {
         title: 'Success',
         description: 'Task deleted successfully',
       });
-      fetchTasks(); // Refresh the tasks list
+      await fetchTasks(); // Refresh the tasks list
     } catch (error) {
       console.error('Error deleting task:', error);
       toast({
@@ -212,7 +260,7 @@ const TasksManagement = () => {
     setFormData({
       title: '',
       description: '',
-      assigned_to: '',
+      assigned_to: null,
       status: 'pending',
       priority: 'medium',
       due_date: '',
@@ -293,18 +341,18 @@ const TasksManagement = () => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="assigned_to">Assign to Volunteer</Label>
+                  <Label htmlFor="assigned_to">Assign to</Label>
                   <Select
-                    value={formData.assigned_to}
-                    onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
+                    value={formData.assigned_to || ''}
+                    onValueChange={(value) => setFormData({ ...formData, assigned_to: value || null })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select volunteer" />
+                      <SelectValue placeholder="Select volunteer or member" />
                     </SelectTrigger>
                     <SelectContent>
-                      {volunteers.map((volunteer) => (
-                        <SelectItem key={volunteer.id} value={volunteer.id}>
-                          {volunteer.first_name} {volunteer.last_name}
+                      {assignees.map((assignee) => (
+                        <SelectItem key={assignee.id} value={assignee.id}>
+                          {assignee.first_name} {assignee.last_name} ({assignee.type})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -421,7 +469,7 @@ const TasksManagement = () => {
                   </div>
                   <div className="flex items-center space-x-1">
                     <Calendar className="h-3 w-3" />
-                    <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>
+                    <span>Due: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}</span>
                   </div>
                 </div>
               </div>

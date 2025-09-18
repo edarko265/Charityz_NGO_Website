@@ -403,7 +403,14 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {filteredDonations.map((donation) => (
+                {filteredDonations.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      {donations.length === 0 ? 'No donations found.' : 'No donations match your search criteria.'}
+                    </p>
+                  </div>
+                ) : (
+                  filteredDonations.map((donation) => (
                   <div key={donation.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
@@ -442,7 +449,8 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -456,7 +464,12 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {volunteers.map((volunteer) => (
+                {volunteers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No volunteer applications found.</p>
+                  </div>
+                ) : (
+                  volunteers.map((volunteer) => (
                   <div key={volunteer.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
@@ -502,7 +515,8 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -516,7 +530,12 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {members.map((member) => (
+                {members.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No membership applications found.</p>
+                  </div>
+                ) : (
+                  members.map((member) => (
                   <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
@@ -562,7 +581,8 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
