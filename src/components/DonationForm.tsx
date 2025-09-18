@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,6 +33,26 @@ const DonationForm = () => {
     anonymous: false
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [paystackKey, setPaystackKey] = useState<string>('')
+
+  useEffect(() => {
+    // Fetch Paystack public key securely from edge function
+    const fetchPaystackKey = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-paystack-key')
+        if (error) throw error
+        setPaystackKey(data.publicKey)
+      } catch (error) {
+        console.error('Error fetching Paystack key:', error)
+        toast({
+          title: "Configuration Error",
+          description: "Payment system is not properly configured. Please contact support.",
+          variant: "destructive"
+        })
+      }
+    }
+    fetchPaystackKey()
+  }, [])
 
   const donationAmounts = [25, 50, 100, 250, 500, 1000]
   const designations = [
@@ -61,9 +81,18 @@ const DonationForm = () => {
   }
 
   const initializePaystack = (amount: number, email: string, donationId: string) => {
+    if (!paystackKey) {
+      toast({
+        title: "Payment Error",
+        description: "Payment system is not available. Please contact support.",
+        variant: "destructive"
+      })
+      return
+    }
+
     // @ts-ignore - PaystackPop will be loaded from script
     const handler = PaystackPop.setup({
-      key: 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY', // Replace with your actual public key
+      key: paystackKey,
       email: email,
       amount: amount * 100, // Paystack expects amount in kobo (cents)
       currency: 'GHS', // Ghana Cedis
@@ -389,7 +418,7 @@ const DonationForm = () => {
               type="submit"
               size="lg"
               className="w-full"
-              disabled={isLoading || !finalAmount || finalAmount < 5}
+              disabled={isLoading || !finalAmount || finalAmount < 5 || !paystackKey}
             >
               <CreditCard className="h-4 w-4 mr-2" />
               {isLoading ? 'Processing...' : `Donate $${finalAmount.toFixed(2)}`}
