@@ -12,9 +12,41 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, Users, Briefcase, CreditCard, Calendar, Mail, Phone, MapPin, ArrowRight, Shield, Award, BarChart3 } from "lucide-react";
 import volunteersImage from "@/assets/volunteers-helping.jpg";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const GetInvolved = () => {
+  const { toast } = useToast();
   const donationAmounts = [25, 50, 100, 250, 500, 1000];
+
+  // Volunteer form state
+  const [volunteerForm, setVolunteerForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    areasOfInterest: [] as string[],
+    availability: '',
+    skillsExperience: '',
+    isSubmitting: false
+  });
+
+  // Member form state
+  const [memberForm, setMemberForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    organization: '',
+    membershipType: '',
+    referralSource: '',
+    motivations: '',
+    newsletter: false,
+    events: false,
+    isSubmitting: false
+  });
   
   const volunteerOpportunities = [
     {
@@ -57,6 +89,141 @@ const GetInvolved = () => {
     "Direct communication with leadership team",
     "Special recognition in annual reports"
   ];
+
+  // Handle volunteer form submission
+  const handleVolunteerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!volunteerForm.firstName || !volunteerForm.lastName || !volunteerForm.email) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVolunteerForm(prev => ({ ...prev, isSubmitting: true }));
+
+    try {
+      const { error } = await supabase
+        .from('volunteers')
+        .insert({
+          first_name: volunteerForm.firstName,
+          last_name: volunteerForm.lastName,
+          email: volunteerForm.email,
+          phone: volunteerForm.phone || null,
+          address: volunteerForm.address || null,
+          areas_of_interest: volunteerForm.areasOfInterest,
+          availability: volunteerForm.availability || null,
+          skills_experience: volunteerForm.skillsExperience || null,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Application Submitted! 🎉",
+        description: "Thank you for your interest in volunteering. We'll review your application and contact you soon.",
+      });
+
+      // Reset form
+      setVolunteerForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        address: '',
+        areasOfInterest: [],
+        availability: '',
+        skillsExperience: '',
+        isSubmitting: false
+      });
+
+    } catch (error) {
+      console.error('Error submitting volunteer application:', error);
+      toast({
+        title: "Error",
+        description: "There was an issue submitting your application. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setVolunteerForm(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  // Handle member form submission
+  const handleMemberSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!memberForm.firstName || !memberForm.lastName || !memberForm.email || !memberForm.membershipType) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setMemberForm(prev => ({ ...prev, isSubmitting: true }));
+
+    try {
+      const { error } = await supabase
+        .from('members')
+        .insert({
+          first_name: memberForm.firstName,
+          last_name: memberForm.lastName,
+          email: memberForm.email,
+          phone: memberForm.phone || null,
+          organization: memberForm.organization || null,
+          membership_type: memberForm.membershipType,
+          referral_source: memberForm.referralSource || null,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Membership Application Submitted! 🎉",
+        description: "Welcome to the CharityZ community! We'll process your membership and send you a confirmation email.",
+      });
+
+      // Reset form
+      setMemberForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        organization: '',
+        membershipType: '',
+        referralSource: '',
+        motivations: '',
+        newsletter: false,
+        events: false,
+        isSubmitting: false
+      });
+
+    } catch (error) {
+      console.error('Error submitting membership application:', error);
+      toast({
+        title: "Error",
+        description: "There was an issue submitting your application. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setMemberForm(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  // Handle volunteer interest checkbox changes
+  const handleInterestChange = (interest: string, checked: boolean) => {
+    setVolunteerForm(prev => ({
+      ...prev,
+      areasOfInterest: checked 
+        ? [...prev.areasOfInterest, interest]
+        : prev.areasOfInterest.filter(i => i !== interest)
+    }));
+  };
 
   return (
     <div className="min-h-screen">
@@ -188,48 +355,84 @@ const GetInvolved = () => {
                     <CardHeader>
                       <CardTitle>Volunteer Application</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="First Name" />
-                        <Input placeholder="Last Name" />
-                      </div>
-                      <Input placeholder="Email Address" type="email" />
-                      <Input placeholder="Phone Number" type="tel" />
-                      <Input placeholder="Location/City" />
-                      
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Areas of Interest</label>
-                        <div className="space-y-2">
-                          {["Field Work", "Administrative", "Event Planning", "Social Media", "Fundraising", "Education"].map(area => (
-                            <div key={area} className="flex items-center space-x-2">
-                              <Checkbox id={area} />
-                              <label htmlFor={area} className="text-sm">{area}</label>
-                            </div>
-                          ))}
+                    <CardContent>
+                      <form onSubmit={handleVolunteerSubmit} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <Input 
+                            placeholder="First Name" 
+                            value={volunteerForm.firstName}
+                            onChange={(e) => setVolunteerForm(prev => ({ ...prev, firstName: e.target.value }))}
+                            required
+                          />
+                          <Input 
+                            placeholder="Last Name"
+                            value={volunteerForm.lastName}
+                            onChange={(e) => setVolunteerForm(prev => ({ ...prev, lastName: e.target.value }))}
+                            required
+                          />
                         </div>
-                      </div>
+                        <Input 
+                          placeholder="Email Address" 
+                          type="email"
+                          value={volunteerForm.email}
+                          onChange={(e) => setVolunteerForm(prev => ({ ...prev, email: e.target.value }))}
+                          required
+                        />
+                        <Input 
+                          placeholder="Phone Number" 
+                          type="tel"
+                          value={volunteerForm.phone}
+                          onChange={(e) => setVolunteerForm(prev => ({ ...prev, phone: e.target.value }))}
+                        />
+                        <Input 
+                          placeholder="Location/City"
+                          value={volunteerForm.address}
+                          onChange={(e) => setVolunteerForm(prev => ({ ...prev, address: e.target.value }))}
+                        />
+                        
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Areas of Interest</label>
+                          <div className="space-y-2">
+                            {["Field Work", "Administrative", "Event Planning", "Social Media", "Fundraising", "Education"].map(area => (
+                              <div key={area} className="flex items-center space-x-2">
+                                <Checkbox 
+                                  id={area}
+                                  checked={volunteerForm.areasOfInterest.includes(area)}
+                                  onCheckedChange={(checked) => handleInterestChange(area, checked as boolean)}
+                                />
+                                <label htmlFor={area} className="text-sm">{area}</label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
 
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">Availability</label>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your availability" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="weekends">Weekends only</SelectItem>
-                            <SelectItem value="weekdays">Weekday evenings</SelectItem>
-                            <SelectItem value="flexible">Flexible schedule</SelectItem>
-                            <SelectItem value="full-time">Full-time commitment</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">Availability</label>
+                          <Select value={volunteerForm.availability} onValueChange={(value) => setVolunteerForm(prev => ({ ...prev, availability: value }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your availability" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="weekends">Weekends only</SelectItem>
+                              <SelectItem value="weekdays">Weekday evenings</SelectItem>
+                              <SelectItem value="flexible">Flexible schedule</SelectItem>
+                              <SelectItem value="full-time">Full-time commitment</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                      <Textarea placeholder="Tell us about your skills, experience, and why you want to volunteer with Charity Z..." rows={4} />
+                        <Textarea 
+                          placeholder="Tell us about your skills, experience, and why you want to volunteer with Charity Z..." 
+                          rows={4}
+                          value={volunteerForm.skillsExperience}
+                          onChange={(e) => setVolunteerForm(prev => ({ ...prev, skillsExperience: e.target.value }))}
+                        />
 
-                      <Button className="w-full">
-                        <Users className="w-4 h-4 mr-2" />
-                        Submit Application
-                      </Button>
+                        <Button type="submit" className="w-full" disabled={volunteerForm.isSubmitting}>
+                          <Users className="w-4 h-4 mr-2" />
+                          {volunteerForm.isSubmitting ? 'Submitting...' : 'Submit Application'}
+                        </Button>
+                      </form>
                     </CardContent>
                   </Card>
                 </div>
@@ -298,63 +501,109 @@ const GetInvolved = () => {
                       Membership Application
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="First Name" />
-                      <Input placeholder="Last Name" />
-                    </div>
-                    <Input placeholder="Email Address" type="email" />
-                    <Input placeholder="Phone Number" type="tel" />
-                    <Input placeholder="Organization (Optional)" />
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Membership Type</label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select membership type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="individual">Individual Membership - $50/year</SelectItem>
-                          <SelectItem value="family">Family Membership - $100/year</SelectItem>
-                          <SelectItem value="student">Student Membership - $25/year</SelectItem>
-                          <SelectItem value="corporate">Corporate Membership - $500/year</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">How did you hear about us?</label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an option" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="social">Social Media</SelectItem>
-                          <SelectItem value="friend">Friend/Family</SelectItem>
-                          <SelectItem value="event">Event/Workshop</SelectItem>
-                          <SelectItem value="website">Website</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <Textarea placeholder="Why do you want to become a member? What are your interests or how would you like to contribute?" rows={4} />
-
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="newsletter" />
-                        <label htmlFor="newsletter" className="text-sm">Subscribe to our newsletter</label>
+                  <CardContent>
+                    <form onSubmit={handleMemberSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input 
+                          placeholder="First Name" 
+                          value={memberForm.firstName}
+                          onChange={(e) => setMemberForm(prev => ({ ...prev, firstName: e.target.value }))}
+                          required
+                        />
+                        <Input 
+                          placeholder="Last Name"
+                          value={memberForm.lastName}
+                          onChange={(e) => setMemberForm(prev => ({ ...prev, lastName: e.target.value }))}
+                          required
+                        />
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="events" />
-                        <label htmlFor="events" className="text-sm">Notify me about upcoming events</label>
+                      <Input 
+                        placeholder="Email Address" 
+                        type="email"
+                        value={memberForm.email}
+                        onChange={(e) => setMemberForm(prev => ({ ...prev, email: e.target.value }))}
+                        required
+                      />
+                      <Input 
+                        placeholder="Phone Number" 
+                        type="tel"
+                        value={memberForm.phone}
+                        onChange={(e) => setMemberForm(prev => ({ ...prev, phone: e.target.value }))}
+                      />
+                      <Input 
+                        placeholder="Organization (Optional)"
+                        value={memberForm.organization}
+                        onChange={(e) => setMemberForm(prev => ({ ...prev, organization: e.target.value }))}
+                      />
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Membership Type</label>
+                        <Select 
+                          value={memberForm.membershipType} 
+                          onValueChange={(value) => setMemberForm(prev => ({ ...prev, membershipType: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select membership type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="individual">Individual Membership - GH₵200/year</SelectItem>
+                            <SelectItem value="family">Family Membership - GH₵400/year</SelectItem>
+                            <SelectItem value="student">Student Membership - GH₵100/year</SelectItem>
+                            <SelectItem value="corporate">Corporate Membership - GH₵2000/year</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
 
-                    <Button className="w-full" size="lg">
-                      <Users className="w-4 h-4 mr-2" />
-                      Join as Member
-                    </Button>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">How did you hear about us?</label>
+                        <Select 
+                          value={memberForm.referralSource} 
+                          onValueChange={(value) => setMemberForm(prev => ({ ...prev, referralSource: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an option" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="social">Social Media</SelectItem>
+                            <SelectItem value="friend">Friend/Family</SelectItem>
+                            <SelectItem value="event">Event/Workshop</SelectItem>
+                            <SelectItem value="website">Website</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Textarea 
+                        placeholder="Why do you want to become a member? What are your interests or how would you like to contribute?" 
+                        rows={4}
+                        value={memberForm.motivations}
+                        onChange={(e) => setMemberForm(prev => ({ ...prev, motivations: e.target.value }))}
+                      />
+
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="newsletter"
+                            checked={memberForm.newsletter}
+                            onCheckedChange={(checked) => setMemberForm(prev => ({ ...prev, newsletter: checked as boolean }))}
+                          />
+                          <label htmlFor="newsletter" className="text-sm">Subscribe to our newsletter</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="events"
+                            checked={memberForm.events}
+                            onCheckedChange={(checked) => setMemberForm(prev => ({ ...prev, events: checked as boolean }))}
+                          />
+                          <label htmlFor="events" className="text-sm">Notify me about upcoming events</label>
+                        </div>
+                      </div>
+
+                      <Button type="submit" className="w-full" size="lg" disabled={memberForm.isSubmitting}>
+                        <Users className="w-4 h-4 mr-2" />
+                        {memberForm.isSubmitting ? 'Submitting...' : 'Join as Member'}
+                      </Button>
+                    </form>
                   </CardContent>
                 </Card>
 
