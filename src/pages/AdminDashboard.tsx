@@ -1,24 +1,93 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, FileText, ClipboardList, BarChart } from 'lucide-react';
+import { Plus, Users, FileText, ClipboardList, BarChart, RefreshCw } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdminDashboardComponent from '@/components/AdminDashboard';
 import PostsManagement from '@/components/PostsManagement';
 import TasksManagement from '@/components/TasksManagement';
+import { supabase } from '@/integrations/supabase/client';
+
+interface DashboardStats {
+  totalUsers: number;
+  activePosts: number;
+  pendingTasks: number;
+  totalDonations: string;
+}
 
 const AdminDashboard = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    activePosts: 0,
+    pendingTasks: 0,
+    totalDonations: '$0'
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch user count
+      const { count: userCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true });
+
+      // Fetch active posts count
+      const { count: postsCount } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('published', true);
+
+      // Fetch pending tasks count
+      const { count: tasksCount } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+      // Fetch total donations amount
+      const { data: donations } = await supabase
+        .from('donations')
+        .select('amount')
+        .eq('payment_status', 'successful');
+
+      const totalAmount = donations?.reduce((sum, d) => sum + Number(d.amount), 0) || 0;
+
+      setStats({
+        totalUsers: userCount || 0,
+        activePosts: postsCount || 0,
+        pendingTasks: tasksCount || 0,
+        totalDonations: `$${totalAmount.toLocaleString()}`
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage your charity organization from this central hub
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+              <p className="text-muted-foreground">
+                Manage your charity organization from this central hub
+              </p>
+            </div>
+            <Button onClick={fetchStats} disabled={isLoading}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
@@ -49,9 +118,11 @@ const AdminDashboard = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">1,234</div>
+                  <div className="text-2xl font-bold">
+                    {isLoading ? '...' : stats.totalUsers}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    +20% from last month
+                    Registered users
                   </p>
                 </CardContent>
               </Card>
@@ -62,9 +133,11 @@ const AdminDashboard = () => {
                   <FileText className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">45</div>
+                  <div className="text-2xl font-bold">
+                    {isLoading ? '...' : stats.activePosts}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    +5 new this week
+                    Published posts
                   </p>
                 </CardContent>
               </Card>
@@ -75,9 +148,11 @@ const AdminDashboard = () => {
                   <ClipboardList className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">12</div>
+                  <div className="text-2xl font-bold">
+                    {isLoading ? '...' : stats.pendingTasks}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    3 due today
+                    Awaiting completion
                   </p>
                 </CardContent>
               </Card>
@@ -88,9 +163,11 @@ const AdminDashboard = () => {
                   <BarChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">$45,231</div>
+                  <div className="text-2xl font-bold">
+                    {isLoading ? '...' : stats.totalDonations}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    +12% from last month
+                    Successfully raised
                   </p>
                 </CardContent>
               </Card>
