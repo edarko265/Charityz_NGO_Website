@@ -313,7 +313,7 @@ const AdminDashboard = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
+              <Cedisign className="h-5 w-5 text-green-600" />
               <h3 className="font-semibold text-sm text-muted-foreground">Total Raised</h3>
             </div>
             <p className="text-2xl font-bold mt-2">GH₵{stats.totalAmount.toFixed(2)}</p>
