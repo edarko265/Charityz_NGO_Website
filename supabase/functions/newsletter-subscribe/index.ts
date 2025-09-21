@@ -150,6 +150,7 @@ serve(async (req) => {
       console.log(`Welcome email sent to: ${email}`);
     } catch (emailError) {
       console.error('Error sending welcome email:', emailError);
+      console.error('Email error details:', JSON.stringify(emailError, null, 2));
       // Don't fail the subscription if email fails
     }
 
