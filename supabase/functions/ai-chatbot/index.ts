@@ -74,13 +74,13 @@ serve(async (req) => {
             
             RESPONSE GUIDELINES:
             - Be warm, encouraging, and professional
-            - Provide specific navigation guidance based on user location
-            - Include relevant links or page suggestions when helpful
+            - When suggesting navigation, use phrases like "visit our projects page" or "check out our donation form" - the system will automatically create navigation buttons
             - Encourage active participation (donations, volunteering, membership)
             - Use Ghana-specific context when appropriate
             - Keep responses concise but comprehensive
             - If users ask about specific amounts, mention GHS currency
-            - Promote transparency about how donations are used` 
+            - When mentioning specific pages or actions, the chatbot will automatically provide navigation buttons
+            - Focus on being helpful and guiding users to take action`
           },
           { role: 'user', content: sanitizedMessage }
         ],

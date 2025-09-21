@@ -6,18 +6,26 @@ import { Card } from "@/components/ui/card";
 import { MessageCircle, X, Send, Bot, User, Heart, Users, Briefcase, Mail, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface Message {
   id: string;
   text: string;
   isBot: boolean;
   timestamp: Date;
+  navigationActions?: NavigationAction[];
+}
+
+interface NavigationAction {
+  label: string;
+  path: string;
+  description?: string;
 }
 
 const Chatbot = () => {
   const { toast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -57,6 +65,72 @@ const Chatbot = () => {
     return pageContexts[path] || `page at ${path}`;
   };
 
+  const detectNavigationIntents = (text: string): NavigationAction[] => {
+    const actions: NavigationAction[] = [];
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes("donat") || lowerText.includes("give") || lowerText.includes("contribute")) {
+      actions.push({
+        label: "Donate Now",
+        path: "/get-involved",
+        description: "Make a secure donation"
+      });
+    }
+    
+    if (lowerText.includes("volunteer") || lowerText.includes("get involved")) {
+      actions.push({
+        label: "Volunteer",
+        path: "/get-involved",
+        description: "Join our volunteer program"
+      });
+    }
+    
+    if (lowerText.includes("project") || lowerText.includes("initiative")) {
+      actions.push({
+        label: "View Projects",
+        path: "/projects",
+        description: "See our current projects"
+      });
+    }
+    
+    if (lowerText.includes("event") || lowerText.includes("calendar")) {
+      actions.push({
+        label: "View Events",
+        path: "/events",
+        description: "Check upcoming events"
+      });
+    }
+    
+    if (lowerText.includes("contact") || lowerText.includes("reach") || lowerText.includes("get in touch")) {
+      actions.push({
+        label: "Contact Us",
+        path: "/contact",
+        description: "Get our contact information"
+      });
+    }
+    
+    if (lowerText.includes("about") || lowerText.includes("mission") || lowerText.includes("who are")) {
+      actions.push({
+        label: "About Us",
+        path: "/about",
+        description: "Learn about our mission"
+      });
+    }
+    
+    if (lowerText.includes("member") || lowerText.includes("join")) {
+      actions.push({
+        label: "Become a Member",
+        path: "/get-involved",
+        description: "Join our community"
+      });
+    }
+
+    // Remove duplicates based on path
+    return actions.filter((action, index, self) => 
+      index === self.findIndex(a => a.path === action.path)
+    );
+  };
+
   const getAIResponse = async (userMessage: string): Promise<string> => {
     try {
       const currentPage = getCurrentPageContext();
@@ -91,11 +165,13 @@ const Chatbot = () => {
 
     try {
       const response = await getAIResponse(currentMessage);
+      const navigationActions = detectNavigationIntents(response);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         text: response,
         isBot: true,
         timestamp: new Date(),
+        navigationActions: navigationActions.length > 0 ? navigationActions : undefined,
       };
       
       setMessages(prev => [...prev, botResponse]);
@@ -198,14 +274,38 @@ const Chatbot = () => {
                     >
                       {message.isBot ? <Bot className="w-3 h-3" /> : <User className="w-3 h-3" />}
                     </div>
-                    <div
-                      className={`px-3 py-2 rounded-lg text-sm ${
-                        message.isBot
-                          ? "bg-muted text-muted-foreground"
-                          : "bg-primary text-primary-foreground"
-                      }`}
-                    >
-                      {message.text}
+                    <div className="space-y-2">
+                      <div
+                        className={`px-3 py-2 rounded-lg text-sm ${
+                          message.isBot
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-primary text-primary-foreground"
+                        }`}
+                      >
+                        {message.text}
+                      </div>
+                      {message.navigationActions && (
+                        <div className="flex flex-wrap gap-2 ml-8">
+                          {message.navigationActions.map((action, index) => (
+                            <Button
+                              key={index}
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                navigate(action.path);
+                                setIsOpen(false);
+                                toast({
+                                  title: "Navigating",
+                                  description: `Taking you to ${action.label}`,
+                                });
+                              }}
+                              className="h-7 text-xs"
+                            >
+                              {action.label}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
