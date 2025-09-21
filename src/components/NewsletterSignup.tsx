@@ -117,7 +117,7 @@ const NewsletterSignup = ({ variant = "inline", className = "" }: NewsletterSign
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
-            className="w-full"
+            className="w-full bg-white text-foreground placeholder:text-muted-foreground"
           />
           <Button 
             type="submit" 
