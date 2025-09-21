@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Heart, Users, Briefcase } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
+import NewsletterSignup from "@/components/NewsletterSignup";
 
 const Hero = () => {
   return (
@@ -45,6 +46,11 @@ const Hero = () => {
                 Get Involved
               </Link>
             </Button>
+          </div>
+
+          {/* Newsletter Signup */}
+          <div className="mt-12 animate-fade-in delay-1000">
+            <NewsletterSignup variant="hero" />
           </div>
 
           {/* Stats */}

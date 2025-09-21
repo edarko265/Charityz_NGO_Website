@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Heart, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import charityLogo from "@/assets/charity-z-logo.jpg";
+import NewsletterSignup from "@/components/NewsletterSignup";
 
 const Footer = () => {
   const quickLinks = [
@@ -112,18 +112,7 @@ const Footer = () => {
               </div>
             </div>
             
-            <div>
-              <h5 className="font-medium mb-3">Stay Updated</h5>
-              <div className="flex space-x-2">
-                <Input 
-                  placeholder="Your email" 
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                />
-                <Button size="sm" className="bg-primary hover:bg-primary/90">
-                  <Mail className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            <NewsletterSignup variant="footer" />
           </div>
         </div>
 
