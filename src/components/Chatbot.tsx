@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, X, Send, Bot, User, Heart, Users, Briefcase, Mail } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Heart, Users, Briefcase, Mail, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "react-router-dom";
 
 interface Message {
   id: string;
@@ -13,11 +16,13 @@ interface Message {
 }
 
 const Chatbot = () => {
+  const { toast } = useToast();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hello! I'm Charity Z's assistant. How can I help you today? You can ask me about our projects, how to get involved, or anything else!",
+      text: "Hello! I'm Charity Z's AI assistant. I can help you navigate our website, answer questions about our projects, donations, volunteering, and more. What would you like to know?",
       isBot: true,
       timestamp: new Date(),
     },
@@ -34,48 +39,39 @@ const Chatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const predefinedResponses = {
-    donation: {
-      keywords: ["donate", "donation", "money", "give", "contribute", "support financially"],
-      response: "Thank you for your interest in supporting Charity Z! 💝 You can make a donation through our secure donation portal. Every contribution, no matter the size, makes a real difference in the communities we serve. Would you like me to direct you to our donation page?"
-    },
-    volunteer: {
-      keywords: ["volunteer", "help", "time", "work", "contribute time", "get involved"],
-      response: "We'd love to have you volunteer with us! 🙋‍♀️ We have opportunities ranging from field work to administrative support, event planning, and skill-based volunteering. You can sign up through our volunteer portal and we'll match you with opportunities that fit your schedule and interests."
-    },
-    membership: {
-      keywords: ["member", "membership", "join", "become member"],
-      response: "Becoming a member of Charity Z means joining our community of changemakers! 🤝 Members receive monthly newsletters, can vote on key initiatives, attend exclusive events, and get special recognition. It's a great way to stay connected with our mission."
-    },
-    projects: {
-      keywords: ["project", "work", "what do you do", "initiatives", "programs"],
-      response: "Charity Z focuses on sustainable community development! 🌍 Our current projects include clean water initiatives in Kenya, education programs in Guatemala, and healthcare centers in the Philippines. Each project is designed with community input to ensure lasting impact."
-    },
-    contact: {
-      keywords: ["contact", "email", "phone", "address", "reach", "get in touch"],
-      response: "You can reach us at: 📞 Phone: +1 (555) 123-4567 📧 Email: info@charityz.org 📍 Address: 123 Hope Street, City, State 12345. Our team typically responds within 24 hours!"
-    },
-    about: {
-      keywords: ["about", "who are you", "what is charity z", "mission", "vision"],
-      response: "Charity Z is dedicated to creating positive change through compassionate action and sustainable community development. 🌟 Our mission is to empower communities by addressing basic needs, education, and economic development. We believe everyone deserves hope, opportunity, and dignity."
-    },
-    events: {
-      keywords: ["event", "events", "activities", "calendar", "upcoming"],
-      response: "We regularly host fundraising events, volunteer appreciation gatherings, and community awareness programs! 📅 Check our events page for upcoming activities. We'd love to see you at our next event!"
-    },
-    default: "I'd be happy to help you with information about Charity Z! You can ask me about donations, volunteering, membership, our projects, contact information, or upcoming events. What would you like to know more about? 😊"
+  const getCurrentPageContext = () => {
+    const path = location.pathname;
+    const pageContexts: { [key: string]: string } = {
+      '/': 'home page with hero section, about, projects, and get involved sections',
+      '/about': 'about page with detailed information about Charity Z\'s mission, vision, and team',
+      '/projects': 'projects page showing current initiatives and their progress',
+      '/get-involved': 'get involved page with donation form, volunteer signup, and membership options',
+      '/events': 'events page listing upcoming fundraising and awareness events',
+      '/contact': 'contact page with contact information, form, and office locations',
+      '/dashboard': 'user dashboard for donors, volunteers, and members',
+      '/auth': 'authentication page for login and registration',
+      '/faq': 'frequently asked questions page',
+      '/partnerships': 'partnerships page showing organizational collaborations'
+    };
+    
+    return pageContexts[path] || `page at ${path}`;
   };
 
-  const getBotResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    for (const [key, response] of Object.entries(predefinedResponses)) {
-      if (key !== 'default' && typeof response === 'object' && response.keywords.some(keyword => lowerMessage.includes(keyword))) {
-        return response.response;
-      }
+  const getAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const currentPage = getCurrentPageContext();
+      const enhancedMessage = `User is currently on the ${currentPage}. User message: ${userMessage}`;
+      
+      const { data, error } = await supabase.functions.invoke('ai-chatbot', {
+        body: { message: enhancedMessage }
+      });
+      
+      if (error) throw error;
+      return data.reply;
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      throw error;
     }
-    
-    return predefinedResponses.default;
   };
 
   const handleSendMessage = async () => {
@@ -89,21 +85,38 @@ const Chatbot = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage("");
     setIsTyping(true);
 
-    // Simulate typing delay
-    setTimeout(() => {
+    try {
+      const response = await getAIResponse(currentMessage);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBotResponse(inputMessage),
+        text: response,
         isBot: true,
         timestamp: new Date(),
       };
       
       setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error('Chatbot error:', error);
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I apologize, but I'm having trouble processing your message right now. Please try again in a moment, or feel free to contact our team directly.",
+        isBot: true,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect to our AI assistant. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -114,10 +127,10 @@ const Chatbot = () => {
   };
 
   const quickActions = [
-    { icon: Heart, text: "How to donate?", message: "How can I make a donation?" },
-    { icon: Users, text: "Volunteer with us", message: "I want to volunteer" },
-    { icon: Briefcase, text: "Our projects", message: "Tell me about your projects" },
-    { icon: Mail, text: "Contact info", message: "How can I contact you?" },
+    { icon: Heart, text: "How to donate?", message: "How can I make a donation to support Charity Z?" },
+    { icon: Users, text: "Volunteer with us", message: "I want to volunteer. What opportunities are available?" },
+    { icon: Briefcase, text: "Our projects", message: "Tell me about your current projects and initiatives" },
+    { icon: Mail, text: "Contact info", message: "How can I contact Charity Z?" },
   ];
 
   return (
@@ -205,10 +218,9 @@ const Chatbot = () => {
                       <Bot className="w-3 h-3 text-primary-foreground" />
                     </div>
                     <div className="bg-muted px-3 py-2 rounded-lg">
-                      <div className="flex space-x-1">
-                        <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" />
-                        <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce delay-100" />
-                        <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce delay-200" />
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Thinking...</span>
                       </div>
                     </div>
                   </div>
