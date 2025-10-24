@@ -42,8 +42,8 @@ serve(async (req) => {
 
     // Check if user is an admin using the has_role function
     const { data: isAdmin, error: roleError } = await supabase.rpc('has_role', {
-      _user_id: user.id,
-      _role: 'admin'
+      user_uuid: user.id,
+      check_role: 'admin'
     });
 
     if (roleError || !isAdmin) {

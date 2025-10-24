@@ -12,6 +12,8 @@ import ProjectsManagement from '@/components/ProjectsManagement';
 import EventsManagement from '@/components/EventsManagement';
 import AboutManagement from '@/components/AboutManagement';
 import UserRolesManagement from '@/components/UserRolesManagement';
+import FAQManagement from '@/components/FAQManagement';
+import TeamMembersManagement from '@/components/TeamMembersManagement';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardStats {
@@ -29,6 +31,7 @@ const AdminDashboard = () => {
     totalDonations: 'GH₵0'
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     fetchStats();
@@ -94,8 +97,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8 gap-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-10 gap-2">
             <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
               <BarChart className="h-4 w-4" />
               Overview
@@ -119,6 +122,14 @@ const AdminDashboard = () => {
             <TabsTrigger value="about" className="flex items-center gap-1 text-xs">
               <FileText className="h-4 w-4" />
               About
+            </TabsTrigger>
+            <TabsTrigger value="team" className="flex items-center gap-1 text-xs">
+              <Users className="h-4 w-4" />
+              Team
+            </TabsTrigger>
+            <TabsTrigger value="faq" className="flex items-center gap-1 text-xs">
+              <FileText className="h-4 w-4" />
+              FAQ
             </TabsTrigger>
             <TabsTrigger value="posts" className="flex items-center gap-1 text-xs">
               <FileText className="h-4 w-4" />
@@ -202,15 +213,15 @@ const AdminDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('posts')}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create New Post
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('tasks')}>
                     <ClipboardList className="h-4 w-4 mr-2" />
                     Assign New Task
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('users')}>
                     <Users className="h-4 w-4 mr-2" />
                     Manage Users
                   </Button>
@@ -262,6 +273,14 @@ const AdminDashboard = () => {
 
           <TabsContent value="about">
             <AboutManagement />
+          </TabsContent>
+
+          <TabsContent value="team">
+            <TeamMembersManagement />
+          </TabsContent>
+
+          <TabsContent value="faq">
+            <FAQManagement />
           </TabsContent>
 
           <TabsContent value="posts">
