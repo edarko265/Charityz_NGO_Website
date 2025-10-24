@@ -21,6 +21,18 @@ serve(async (req) => {
   }
 
   try {
+    // Require authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ 
+        error: 'Unauthorized - Authentication required',
+        reply: 'Please sign in to use the chatbot.' 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { message } = await req.json();
 
     // Input validation and sanitization

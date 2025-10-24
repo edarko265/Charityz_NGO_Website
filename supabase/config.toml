@@ -4,10 +4,10 @@ project_id = "xyghxlddqfvcgxatbuxk"
 verify_jwt = false
 
 [functions.ai-chatbot]
-verify_jwt = false
+verify_jwt = true
 
 [functions.donation-receipt-generator]
-verify_jwt = false
+verify_jwt = true
 
 [functions.get-paystack-key]
 verify_jwt = false
@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.newsletter-subscribe]
 verify_jwt = false
+
+[functions.get-user-info]
+verify_jwt = true

@@ -30,7 +30,7 @@ const UserRolesManagement = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // Get all user roles with emails
+      // Get all user roles
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role, created_at')
@@ -38,18 +38,18 @@ const UserRolesManagement = () => {
 
       if (rolesError) throw rolesError;
 
-      // Get user emails from auth
+      // Get user emails using secure edge function
       const usersWithEmails: UserWithRole[] = [];
       
       for (const userRole of userRoles || []) {
-        const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(
-          userRole.user_id
-        );
+        const { data, error: userError } = await supabase.functions.invoke('get-user-info', {
+          body: { user_id: userRole.user_id }
+        });
         
-        if (!userError && user) {
+        if (!userError && data?.email) {
           usersWithEmails.push({
-            id: user.id,
-            email: user.email || 'N/A',
+            id: userRole.user_id,
+            email: data.email,
             role: userRole.role,
             created_at: userRole.created_at,
           });
