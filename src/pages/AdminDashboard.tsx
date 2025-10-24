@@ -8,6 +8,10 @@ import Footer from '@/components/Footer';
 import AdminDashboardComponent from '@/components/AdminDashboard';
 import PostsManagement from '@/components/PostsManagement';
 import TasksManagement from '@/components/TasksManagement';
+import ProjectsManagement from '@/components/ProjectsManagement';
+import EventsManagement from '@/components/EventsManagement';
+import AboutManagement from '@/components/AboutManagement';
+import UserRolesManagement from '@/components/UserRolesManagement';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardStats {
@@ -91,20 +95,36 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-8 gap-2">
+            <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
               <BarChart className="h-4 w-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
+            <TabsTrigger value="users" className="flex items-center gap-1 text-xs">
               <Users className="h-4 w-4" />
               Users
             </TabsTrigger>
-            <TabsTrigger value="posts" className="flex items-center gap-2">
+            <TabsTrigger value="roles" className="flex items-center gap-1 text-xs">
+              <Users className="h-4 w-4" />
+              Roles
+            </TabsTrigger>
+            <TabsTrigger value="projects" className="flex items-center gap-1 text-xs">
+              <FileText className="h-4 w-4" />
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="events" className="flex items-center gap-1 text-xs">
+              <ClipboardList className="h-4 w-4" />
+              Events
+            </TabsTrigger>
+            <TabsTrigger value="about" className="flex items-center gap-1 text-xs">
+              <FileText className="h-4 w-4" />
+              About
+            </TabsTrigger>
+            <TabsTrigger value="posts" className="flex items-center gap-1 text-xs">
               <FileText className="h-4 w-4" />
               Posts
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex items-center gap-2">
+            <TabsTrigger value="tasks" className="flex items-center gap-1 text-xs">
               <ClipboardList className="h-4 w-4" />
               Tasks
             </TabsTrigger>
@@ -226,6 +246,22 @@ const AdminDashboard = () => {
 
           <TabsContent value="users">
             <AdminDashboardComponent />
+          </TabsContent>
+
+          <TabsContent value="roles">
+            <UserRolesManagement />
+          </TabsContent>
+
+          <TabsContent value="projects">
+            <ProjectsManagement />
+          </TabsContent>
+
+          <TabsContent value="events">
+            <EventsManagement />
+          </TabsContent>
+
+          <TabsContent value="about">
+            <AboutManagement />
           </TabsContent>
 
           <TabsContent value="posts">
