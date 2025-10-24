@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      about_content: {
+        Row: {
+          content: string
+          id: string
+          image_url: string | null
+          section: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content: string
+          id?: string
+          image_url?: string | null
+          section: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          id?: string
+          image_url?: string | null
+          section?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       donation_receipts: {
         Row: {
           donation_id: string | null
@@ -123,6 +153,51 @@ export type Database = {
           name?: string
           phone?: string | null
           total_donated?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          capacity: number | null
+          category: string
+          created_at: string
+          created_by: string | null
+          date: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          registered: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          category: string
+          created_at?: string
+          created_by?: string | null
+          date: string
+          description: string
+          id?: string
+          image_url?: string | null
+          location: string
+          registered?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          registered?: number | null
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -265,6 +340,63 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          beneficiaries: number
+          budget: number | null
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          images: Json | null
+          location: string
+          primary_image_url: string | null
+          progress: number
+          raised: number | null
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          beneficiaries?: number
+          budget?: number | null
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          images?: Json | null
+          location: string
+          primary_image_url?: string | null
+          progress?: number
+          raised?: number | null
+          start_date: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          beneficiaries?: number
+          budget?: number | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          images?: Json | null
+          location?: string
+          primary_image_url?: string | null
+          progress?: number
+          raised?: number | null
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           assigned_by: string
@@ -381,10 +513,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_user_email: {
-        Args: { user_uuid: string }
-        Returns: string
-      }
+      get_user_email: { Args: { user_uuid: string }; Returns: string }
       get_user_role: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["app_role"]
