@@ -51,27 +51,14 @@ const Header = () => {
         </nav>
 
         <div className="ml-auto flex items-center space-x-4">
-          <Button size="sm" className="hidden md:inline-flex">
-            <Heart className="w-4 h-4 mr-2" />
-            Donate Now
-          </Button>
-
           {user ? (
             <div className="hidden md:flex items-center space-x-2">
-              <Link to="/dashboard">
+              <Link to={isAdmin ? "/admin" : "/dashboard"}>
                 <Button variant="outline" size="sm">
                   <User className="w-4 h-4 mr-2" />
                   Dashboard
                 </Button>
               </Link>
-              {isAdmin && (
-                <Link to="/admin">
-                  <Button variant="outline" size="sm">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Admin
-                  </Button>
-                </Link>
-              )}
               <span className="text-sm text-muted-foreground">
                 Welcome, {user.user_metadata?.first_name || user.email}
               </span>
@@ -112,10 +99,6 @@ const Header = () => {
                     </Link>
                   );
                 })}
-                <Button className="mt-6">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Donate Now
-                </Button>
 
                 {user ? (
                   <div className="space-y-2 pt-4 border-t">
@@ -123,20 +106,12 @@ const Header = () => {
                       <User className="w-4 h-4" />
                       <span>{user.user_metadata?.first_name || user.email}</span>
                     </div>
-                     <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                     <Link to={isAdmin ? "/admin" : "/dashboard"} onClick={() => setIsOpen(false)}>
                       <Button variant="outline" className="w-full mb-2">
                         <User className="w-4 h-4 mr-2" />
                         Dashboard
                       </Button>
                     </Link>
-                    {isAdmin && (
-                      <Link to="/admin" onClick={() => setIsOpen(false)}>
-                        <Button variant="outline" className="w-full mb-2">
-                          <Settings className="w-4 h-4 mr-2" />
-                          Admin Dashboard
-                        </Button>
-                      </Link>
-                    )}
                     <Button variant="outline" className="w-full" onClick={signOut}>
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
