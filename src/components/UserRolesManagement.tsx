@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 interface UserWithRole {
   id: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
   role: 'admin' | 'donor' | 'volunteer' | 'member';
   created_at: string;
 }
@@ -50,6 +52,8 @@ const UserRolesManagement = () => {
           usersWithEmails.push({
             id: userRole.user_id,
             email: data.email,
+            first_name: data.first_name,
+            last_name: data.last_name,
             role: userRole.role,
             created_at: userRole.created_at,
           });
@@ -109,7 +113,9 @@ const UserRolesManagement = () => {
   };
 
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase();
+    const matchesSearch = user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          fullName.includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === 'all' || user.role === filterRole;
     return matchesSearch && matchesRole;
   });
@@ -133,7 +139,7 @@ const UserRolesManagement = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by email..."
+              placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -165,6 +171,7 @@ const UserRolesManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Current Role</TableHead>
                 <TableHead>Created</TableHead>
@@ -174,6 +181,11 @@ const UserRolesManagement = () => {
             <TableBody>
               {filteredUsers.map((user) => (
                 <TableRow key={user.id}>
+                  <TableCell>
+                    {user.first_name || user.last_name
+                      ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                      : 'N/A'}
+                  </TableCell>
                   <TableCell className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     {user.email}

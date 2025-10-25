@@ -79,10 +79,19 @@ serve(async (req) => {
       });
     }
 
-    // Return only necessary user information
+    // Get user profile information (first_name, last_name)
+    const { data: profileData } = await supabaseAdmin
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('user_id', user_id)
+      .maybeSingle();
+
+    // Return user information with profile data
     return new Response(JSON.stringify({
       email: userData.user.email,
       id: userData.user.id,
+      first_name: profileData?.first_name || null,
+      last_name: profileData?.last_name || null,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
