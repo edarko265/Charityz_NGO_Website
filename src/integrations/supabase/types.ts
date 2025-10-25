@@ -313,6 +313,51 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletters: {
+        Row: {
+          attachment_name: string | null
+          attachment_url: string | null
+          body: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          links: Json | null
+          recipient_count: number | null
+          sent_at: string | null
+          sent_by: string | null
+          subject: string
+          title: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_url?: string | null
+          body: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          links?: Json | null
+          recipient_count?: number | null
+          sent_at?: string | null
+          sent_by?: string | null
+          subject: string
+          title: string
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_url?: string | null
+          body?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          links?: Json | null
+          recipient_count?: number | null
+          sent_at?: string | null
+          sent_by?: string | null
+          subject?: string
+          title?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string

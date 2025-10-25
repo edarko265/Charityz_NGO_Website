@@ -14,6 +14,7 @@ import AboutManagement from '@/components/AboutManagement';
 import UserRolesManagement from '@/components/UserRolesManagement';
 import FAQManagement from '@/components/FAQManagement';
 import TeamMembersManagement from '@/components/TeamMembersManagement';
+import NewsletterManagement from '@/components/NewsletterManagement';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DashboardStats {
@@ -98,7 +99,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10 gap-2">
+          <TabsList className="grid w-full grid-cols-11 gap-2">
             <TabsTrigger value="overview" className="flex items-center gap-1 text-xs">
               <BarChart className="h-4 w-4" />
               Overview
@@ -130,6 +131,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="faq" className="flex items-center gap-1 text-xs">
               <FileText className="h-4 w-4" />
               FAQ
+            </TabsTrigger>
+            <TabsTrigger value="newsletter" className="flex items-center gap-1 text-xs">
+              <FileText className="h-4 w-4" />
+              Newsletter
             </TabsTrigger>
             <TabsTrigger value="posts" className="flex items-center gap-1 text-xs">
               <FileText className="h-4 w-4" />
@@ -281,6 +286,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="faq">
             <FAQManagement />
+          </TabsContent>
+
+          <TabsContent value="newsletter">
+            <NewsletterManagement />
           </TabsContent>
 
           <TabsContent value="posts">
