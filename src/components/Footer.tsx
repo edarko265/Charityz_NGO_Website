@@ -132,11 +132,17 @@ const Footer = () => {
             </div>
             
             <div className="flex items-center space-x-4 text-sm text-white/60">
-              <span>© 2024 Charity Z. All rights reserved.</span>
+              <span>© 2025 Charity Z. All rights reserved.</span>
               <div className="flex items-center space-x-1">
-                <span>Made with</span>
-                <Heart className="w-4 h-4 text-primary" />
-                <span>for communities worldwide</span>
+                <span>Made by</span>
+                <a 
+                  href="https://ericdarko.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors font-medium"
+                >
+                  Eric Darko
+                </a>
               </div>
             </div>
           </div>
