@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ interface DashboardStats {
 }
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     activePosts: 0,
@@ -218,6 +220,10 @@ const AdminDashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline" onClick={() => navigate('/analytics')}>
+                    <BarChart className="h-4 w-4 mr-2" />
+                    View Analytics Dashboard
+                  </Button>
                   <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('posts')}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create New Post

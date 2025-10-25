@@ -20,6 +20,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Transparency from "./pages/Transparency";
 import Reports from "./pages/Reports";
+import Analytics from "./pages/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/transparency" element={<Transparency />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/analytics" element={<AdminRoute><Analytics /></AdminRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
