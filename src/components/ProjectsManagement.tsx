@@ -60,6 +60,7 @@ const ProjectsManagement = () => {
 
   const [imageUrls, setImageUrls] = useState<string[]>(['']);
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -214,6 +215,39 @@ const ProjectsManagement = () => {
     const newUrls = [...imageUrls];
     newUrls[index] = value;
     setImageUrls(newUrls);
+  };
+
+  const handleImageUpload = async (index: number, file: File) => {
+    if (!file) return;
+
+    try {
+      setUploadingImages(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('project-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-images')
+        .getPublicUrl(filePath);
+
+      updateImageUrl(index, publicUrl);
+      toast({ title: 'Success', description: 'Image uploaded successfully' });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload image',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImages(false);
+    }
   };
 
   if (loading) {
@@ -375,31 +409,48 @@ const ProjectsManagement = () => {
                   )}
                 </div>
                 {imageUrls.map((url, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      placeholder="Image URL"
-                      value={url}
-                      onChange={(e) => updateImageUrl(index, e.target.value)}
-                    />
-                    <Button
-                      type="button"
-                      variant={primaryImageIndex === index ? 'default' : 'outline'}
-                      size="icon"
-                      onClick={() => setPrimaryImageIndex(index)}
-                      title="Set as primary image"
-                    >
-                      <Star className="w-4 h-4" />
-                    </Button>
-                    {imageUrls.length > 1 && (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Image URL"
+                        value={url}
+                        onChange={(e) => updateImageUrl(index, e.target.value)}
+                      />
                       <Button
                         type="button"
-                        variant="outline"
+                        variant={primaryImageIndex === index ? 'default' : 'outline'}
                         size="icon"
-                        onClick={() => removeImageField(index)}
+                        onClick={() => setPrimaryImageIndex(index)}
+                        title="Set as primary image"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Star className="w-4 h-4" />
                       </Button>
-                    )}
+                      {imageUrls.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeImageField(index)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(index, file);
+                        }}
+                        disabled={uploadingImages}
+                        className="cursor-pointer"
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        or enter URL above
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>

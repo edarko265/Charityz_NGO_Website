@@ -187,10 +187,10 @@ const ProjectDetailModal = ({ project, open, onOpenChange }: ProjectDetailModalP
             </div>
 
             <div className="flex gap-3 pt-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
-              <Button asChild className="flex-1">
-                <Link to="/get-involved">Support This Project</Link>
+              <Button asChild className="flex-1" onClick={(e) => e.stopPropagation()}>
+                <Link to="/get-involved?tab=donate">Support This Project</Link>
               </Button>
-              <Button variant="outline" asChild className="flex-1">
+              <Button variant="outline" asChild className="flex-1" onClick={(e) => e.stopPropagation()}>
                 <Link to="/contact">Learn More</Link>
               </Button>
             </div>
