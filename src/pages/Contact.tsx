@@ -42,22 +42,10 @@ const Contact = () => {
 
   const officeLocations = [
     {
-      city: "Headquarters - New York",
-      address: "123 Hope Street, New York, NY 10001",
-      phone: "+1 (555) 123-4567",
-      email: "ny@charityz.org"
-    },
-    {
-      city: "Regional Office - Kenya",
-      address: "Nakuru County, Kenya",
-      phone: "+254 700 123 456",
-      email: "kenya@charityz.org"
-    },
-    {
-      city: "Regional Office - Guatemala",
-      address: "San Pedro, Guatemala",
-      phone: "+502 1234 5678",
-      email: "guatemala@charityz.org"
+      city: "Headquarters - Accra, Ghana",
+      address: "2 Benjy's Lodge, McCarty Hill Accra, Ghana",
+      phone: "+233 246 381 145",
+      email: "info@charityz.org"
     }
   ];
 
