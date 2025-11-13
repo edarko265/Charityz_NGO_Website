@@ -34,7 +34,7 @@ const Contact = () => {
     {
       icon: Clock,
       title: "Office Hours",
-      content: "Monday - Friday\n9:00 AM - 5:00 PM EST",
+      content: "Monday - Friday\n9:00 AM - 5:00 PM GMT",
       description: "Emergency contact available 24/7",
       action: "#"
     }
