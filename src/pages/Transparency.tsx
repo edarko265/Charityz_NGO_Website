@@ -237,7 +237,7 @@ const Transparency = () => {
                 </p>
                 <div className="mt-4">
                   <p>Email: transparency@charityz.org</p>
-                  <p>Phone: +1 (555) 123-4567</p>
+                  <p>Phone: +233 246 381 145</p>
                 </div>
                 <p className="text-sm text-muted-foreground mt-4">
                   We are committed to responding to all inquiries within 48 hours.

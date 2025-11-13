@@ -19,7 +19,7 @@ const FAQ = () => {
       questions: [
         {
           question: "How do I make a donation?",
-          answer: "You can donate online through our secure donation portal, by phone at +1 (555) 123-4567, by mail to our headquarters, or through bank transfer. We accept all major credit cards, PayPal, and bank transfers. All donations are processed securely and you'll receive an immediate confirmation."
+          answer: "You can donate online through our secure donation portal, by phone at +233 246 381 145, by mail to our headquarters, or through bank transfer. We accept all major credit cards, PayPal, and bank transfers. All donations are processed securely and you'll receive an immediate confirmation."
         },
         {
           question: "Are my donations tax-deductible?",

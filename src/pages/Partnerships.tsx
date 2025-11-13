@@ -197,7 +197,7 @@ const Partnerships = () => {
                 <div className="bg-white/10 rounded-lg p-6">
                   <Phone className="w-6 h-6 mb-3 mx-auto" />
                   <h4 className="font-semibold mb-2">Call Us</h4>
-                  <p className="opacity-90">+1 (555) 123-4567 ext. 201</p>
+                  <p className="opacity-90">+233 246 381 145</p>
                 </div>
               </div>
               

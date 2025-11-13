@@ -20,14 +20,14 @@ const Contact = () => {
     {
       icon: Phone,
       title: "Call Us",
-      content: "+1 (555) 123-4567",
-      description: "Mon-Fri, 9 AM - 5 PM EST",
-      action: "tel:+15551234567"
+      content: "+233 246 381 145",
+      description: "Mon-Fri, 9 AM - 5 PM GMT",
+      action: "tel:+233246381145"
     },
     {
       icon: MapPin,
       title: "Visit Us",
-      content: "123 Hope Street\nCity, State 12345",
+      content: "2 Benjy's Lodge\nMcCarty Hill Accra, Ghana",
       description: "Open by appointment",
       action: "#"
     },
