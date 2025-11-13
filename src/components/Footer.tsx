@@ -146,11 +146,11 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2 text-sm text-white/80">
                 <Phone className="w-4 h-4" />
-                <span>+1 (555) 123-4567</span>
+                <span>+233 246 381 145</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-white/80">
                 <MapPin className="w-4 h-4" />
-                <span>123 Hope Street, City, State 12345</span>
+                <span>2 Benjy's Lodge, McCarty Hill Accra, Ghana</span>
               </div>
             </div>
             

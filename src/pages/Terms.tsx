@@ -208,8 +208,8 @@ const Terms = () => {
                 <div className="mt-4">
                   <p><strong>CharityZ</strong></p>
                   <p>Email: legal@charityz.org</p>
-                  <p>Phone: +1 (555) 123-4567</p>
-                  <p>Address: 123 Hope Street, City, State 12345</p>
+                  <p>Phone: +233 246 381 145</p>
+                  <p>Address: 2 Benjy's Lodge, McCarty Hill Accra, Ghana</p>
                 </div>
               </CardContent>
             </Card>
