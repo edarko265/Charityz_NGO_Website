@@ -24,6 +24,7 @@ const Transparency = lazy(() => import("./pages/Transparency"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/transparency" element={<Transparency />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/analytics" element={<AdminRoute><Analytics /></AdminRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

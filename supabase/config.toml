@@ -1,5 +1,51 @@
 project_id = "charityz"
 
+# Hosted Auth settings, applied with `supabase config push` (only the keys below are changed)
+[auth]
+site_url = "https://www.charityz.org"
+additional_redirect_urls = ["https://www.charityz.org/**", "https://charityz.org/**", "http://localhost:8080/**"]
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+
+# Send auth emails through Resend from the verified charityz.org domain
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "noreply@charityz.org"
+sender_name = "Charity Z"
+
+[auth.email.template.confirmation]
+subject = "Confirm your Charity Z account"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Charity Z password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your Charity Z sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email for Charity Z"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.invite]
+subject = "You're invited to Charity Z"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.reauthentication]
+subject = "Your Charity Z verification code"
+content_path = "./supabase/templates/reauthentication.html"
+
+[auth.external.google]
+enabled = false
+
 [functions.send-newsletter]
 verify_jwt = true
 
