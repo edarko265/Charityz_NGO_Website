@@ -1,6 +1,6 @@
 # Charity Z — NGO Website
 
-Full-stack website for Charity Z Ghana ([www.charityz.com](https://www.charityz.com)): donations (Paystack), volunteer and membership sign-up, projects, events, newsletter, an AI assistant, and an admin dashboard.
+Full-stack website for Charity Z Ghana ([www.charityz.org](https://www.charityz.org)): donations (Paystack), volunteer and membership sign-up, projects, events, newsletter, an AI assistant, and an admin dashboard.
 
 ## Tech stack
 
@@ -54,7 +54,7 @@ supabase secrets set PAYSTACK_PUBLIC_KEY=... PAYSTACK_SECRET_KEY=... RESEND_API_
 
 Then, in the Supabase dashboard:
 
-1. **Authentication > URL Configuration:** set Site URL to `https://www.charityz.com` and add it to Redirect URLs.
+1. **Authentication > URL Configuration:** set Site URL to `https://www.charityz.org`, and add `https://www.charityz.org/**`, `https://charityz.org/**` and `http://localhost:8080/**` to Redirect URLs.
 2. **Make yourself an admin:** sign up on the site, then run in the SQL editor:
    ```sql
    insert into public.user_roles (user_id, role)
@@ -78,7 +78,7 @@ In hPanel, create a website from this GitHub repository with these build setting
 
 ## AI chatbot
 
-The `ai-chatbot` Edge Function answers visitors' questions with Claude (`claude-opus-5-5` at low effort). It is public, so it is rate-limited per visitor (20 messages per 10 minutes, keyed by a hash of the IP address) and overall (2,000 messages per day). Both limits are constants at the top of `supabase/functions/ai-chatbot/index.ts`.
+The `ai-chatbot` Edge Function answers visitors' questions with Claude Haiku 4.5 (`claude-haiku-4-5`, the lowest-cost Claude model). It is public, so it is rate-limited per visitor (20 messages per 10 minutes, keyed by a hash of the IP address) and overall (2,000 messages per day). Both limits are constants at the top of `supabase/functions/ai-chatbot/index.ts`.
 
 ## Payments (Paystack)
 

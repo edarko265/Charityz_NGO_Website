@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Mail, Loader2 } from "lucide-react";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsletterSignupProps {
@@ -37,7 +38,8 @@ const NewsletterSignup = ({ variant = "inline", className = "" }: NewsletterSign
 
       if (error) {
         console.error('Newsletter subscription error:', error);
-        toast.error(error.message || "Failed to subscribe. Please try again.");
+        const body = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+        toast.error(body?.error || "Failed to subscribe. Please try again.");
         return;
       }
 

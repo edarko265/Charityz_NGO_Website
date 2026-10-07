@@ -7,8 +7,51 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, Phone, MapPin, Clock, Send, MessageCircle, Users, Heart, Globe } from "lucide-react";
+import { useState } from "react";
+import { FunctionsHttpError } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+const EMPTY_FORM = { firstName: "", lastName: "", email: "", phone: "", organization: "", subject: "", message: "" };
 
 const Contact = () => {
+  const { toast } = useToast();
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [isSending, setIsSending] = useState(false);
+  const update = (field: keyof typeof EMPTY_FORM) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.subject) {
+      toast({ title: "Please choose a subject", variant: "destructive" });
+      return;
+    }
+    setIsSending(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: {
+          name: `${form.firstName} ${form.lastName}`.trim(),
+          email: form.email,
+          phone: form.phone,
+          organization: form.organization,
+          subject: form.subject,
+          message: form.message,
+        },
+      });
+      if (error) {
+        const body = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+        throw new Error(body?.error || "We couldn't send your message. Please email us at info@charityz.org.");
+      }
+      toast({ title: "Message sent", description: "Thank you! We'll get back to you within 24 hours on business days." });
+      setForm(EMPTY_FORM);
+    } catch (err) {
+      toast({ title: "Message not sent", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const contactInfo = [
     {
       icon: Mail,
@@ -133,18 +176,19 @@ const Contact = () => {
                   Send us a Message
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <Input placeholder="First Name" />
-                  <Input placeholder="Last Name" />
+                  <Input placeholder="First Name" required maxLength={50} value={form.firstName} onChange={update("firstName")} aria-label="First name" />
+                  <Input placeholder="Last Name" maxLength={50} value={form.lastName} onChange={update("lastName")} aria-label="Last name" />
                 </div>
-                <Input placeholder="Email Address" type="email" />
-                <Input placeholder="Phone Number (Optional)" type="tel" />
-                <Input placeholder="Organization (Optional)" />
+                <Input placeholder="Email Address" type="email" required maxLength={254} value={form.email} onChange={update("email")} aria-label="Email address" />
+                <Input placeholder="Phone Number (Optional)" type="tel" maxLength={30} value={form.phone} onChange={update("phone")} aria-label="Phone number" />
+                <Input placeholder="Organization (Optional)" maxLength={150} value={form.organization} onChange={update("organization")} aria-label="Organization" />
                 
                 <div>
                   <label className="text-sm font-medium mb-2 block">Subject</label>
-                  <Select>
+                  <Select value={form.subject} onValueChange={(value) => setForm((prev) => ({ ...prev, subject: value }))}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
@@ -164,17 +208,23 @@ const Contact = () => {
                   <Textarea 
                     placeholder="Tell us how we can help or share your ideas..." 
                     rows={6} 
+                    required
+                    maxLength={5000}
+                    value={form.message}
+                    onChange={update("message")}
+                    aria-label="Message"
                   />
                 </div>
 
-                <Button className="w-full" size="lg">
+                <Button type="submit" className="w-full" size="lg" disabled={isSending}>
                   <Send className="w-4 h-4 mr-2" />
-                  Send Message
+                  {isSending ? "Sending..." : "Send Message"}
                 </Button>
 
                 <p className="text-sm text-muted-foreground text-center">
                   We'll get back to you within 24 hours during business days.
                 </p>
+                </form>
               </CardContent>
             </Card>
 

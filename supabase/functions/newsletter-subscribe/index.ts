@@ -1,22 +1,19 @@
-"use strict";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
-import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { NEWSLETTER_FROM, NEWSLETTER_REPLY_TO, EMAIL_RE, footerHtml, resend, unsubscribeHeaders, unsubscribeLinks } from '../_shared/email.ts';
+import { allowHit, clientIp } from '../_shared/rate-limit.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+const DEFAULT_PREFERENCES = { frequency: 'weekly', topics: ['general'] };
 
-interface SubscriptionRequest {
-  email: string;
-  preferences?: {
-    frequency?: string;
-    topics?: string[];
-  };
-}
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,157 +21,73 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    );
+    const body = await req.json();
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase().slice(0, 254) : '';
+    if (!EMAIL_RE.test(email)) {
+      return json({ error: 'Please provide a valid email address' }, 400);
+    }
+    const preferences = body.preferences && typeof body.preferences === 'object'
+      ? { frequency: String(body.preferences.frequency ?? 'weekly').slice(0, 20), topics: Array.isArray(body.preferences.topics) ? body.preferences.topics.slice(0, 10).map((t: unknown) => String(t).slice(0, 30)) : ['general'] }
+      : DEFAULT_PREFERENCES;
 
-    const { email, preferences }: SubscriptionRequest = await req.json();
-
-    // Validate email
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return new Response(
-        JSON.stringify({ error: 'Please provide a valid email address' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+    // Each signup sends an email, so limit how often one visitor can trigger it
+    const [visitorOk, addressOk] = await Promise.all([
+      allowHit(supabase, `subscribe:${clientIp(req)}`, 5, 3600),
+      allowHit(supabase, `subscribe-email:${email}`, 3, 86400),
+    ]);
+    if (!visitorOk || !addressOk) {
+      return json({ error: 'Too many signup attempts. Please try again later.' }, 429);
     }
 
-    console.log(`Processing newsletter subscription for: ${email}`);
-
-    // Check if email is already subscribed
-    const { data: existingSubscription, error: checkError } = await supabaseClient
+    const { data: existing, error: checkError } = await supabase
       .from('newsletter_subscriptions')
       .select('id, is_active')
       .eq('email', email)
-      .single();
+      .maybeSingle();
+    if (checkError) throw checkError;
 
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking existing subscription:', checkError);
-      throw new Error('Failed to check subscription status');
+    if (existing?.is_active) {
+      return json({ message: 'You are already subscribed to our newsletter!' });
     }
 
-    let subscriptionData;
+    const { error: saveError } = existing
+      ? await supabase.from('newsletter_subscriptions')
+        .update({ is_active: true, preferences, subscribed_at: new Date().toISOString() })
+        .eq('id', existing.id)
+      : await supabase.from('newsletter_subscriptions').insert({ email, preferences });
+    if (saveError) throw saveError;
 
-    if (existingSubscription) {
-      if (existingSubscription.is_active) {
-        return new Response(
-          JSON.stringify({ message: 'Email is already subscribed to our newsletter!' }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          }
-        );
-      } else {
-        // Reactivate subscription
-        const { data, error: updateError } = await supabaseClient
-          .from('newsletter_subscriptions')
-          .update({
-            is_active: true,
-            preferences: preferences || { frequency: 'weekly', topics: ['general'] },
-            subscribed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('email', email)
-          .select()
-          .single();
+    // The subscription stands even if the welcome email fails
+    const { page } = await unsubscribeLinks(email);
+    const { error: emailError } = await resend.emails.send({
+      from: NEWSLETTER_FROM,
+          replyTo: NEWSLETTER_REPLY_TO,
+      to: [email],
+      subject: 'Welcome to the Charity Z newsletter',
+      headers: await unsubscribeHeaders(email),
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #dc2626; text-align: center;">Welcome to Charity Z!</h1>
+          <p>Dear Friend,</p>
+          <p>Thank you for subscribing to the Charity Z newsletter! We're thrilled to have you join our community of changemakers.</p>
+          <p><strong>What to expect:</strong></p>
+          <ul>
+            <li>Updates on our latest projects and impact</li>
+            <li>Stories from the communities we serve</li>
+            <li>Opportunities to get involved and make a difference</li>
+            <li>Invitations to events and fundraisers</li>
+          </ul>
+          <p>Together, we're nurturing dreams and creating positive change across Ghana and beyond.</p>
+          <p>With gratitude,<br><strong>The Charity Z Team</strong></p>
+          ${footerHtml(page)}
+        </div>
+      `,
+    });
+    if (emailError) console.error('Welcome email failed:', emailError);
 
-        if (updateError) {
-          console.error('Error reactivating subscription:', updateError);
-          throw new Error('Failed to reactivate subscription');
-        }
-        subscriptionData = data;
-      }
-    } else {
-      // Create new subscription
-      const { data, error: insertError } = await supabaseClient
-        .from('newsletter_subscriptions')
-        .insert({
-          email,
-          preferences: preferences || { frequency: 'weekly', topics: ['general'] },
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Error creating subscription:', insertError);
-        throw new Error('Failed to create subscription');
-      }
-      subscriptionData = data;
-    }
-
-    // Send welcome email
-    try {
-      await resend.emails.send({
-        from: 'Charity Z <onboarding@resend.dev>',
-        to: [email],
-        subject: 'Welcome to Charity Z Newsletter! 🌟',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #2563eb; text-align: center;">Welcome to Charity Z!</h1>
-            
-            <p>Dear Friend,</p>
-            
-            <p>Thank you for subscribing to the Charity Z newsletter! We're thrilled to have you join our community of changemakers.</p>
-            
-            <p>🎯 <strong>What to expect:</strong></p>
-            <ul>
-              <li>Weekly updates on our latest projects and impact</li>
-              <li>Stories from the communities we serve</li>
-              <li>Opportunities to get involved and make a difference</li>
-              <li>Exclusive invitations to events and fundraisers</li>
-            </ul>
-            
-            <p>Together, we're nurturing dreams and creating positive change across Ghana and beyond.</p>
-            
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #1f2937; margin-top: 0;">Stay Connected</h3>
-              <p>Follow us on social media for daily updates and behind-the-scenes content!</p>
-            </div>
-            
-            <p>With gratitude,<br>
-            <strong>The Charity Z Team</strong></p>
-            
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
-            
-            <p style="font-size: 12px; color: #6b7280; text-align: center;">
-              You're receiving this email because you subscribed to our newsletter. 
-              If you no longer wish to receive these emails, you can unsubscribe at any time.
-            </p>
-          </div>
-        `,
-      });
-
-      console.log(`Welcome email sent to: ${email}`);
-    } catch (emailError) {
-      console.error('Error sending welcome email:', emailError);
-      console.error('Email error details:', JSON.stringify(emailError, null, 2));
-      // Don't fail the subscription if email fails
-    }
-
-    return new Response(
-      JSON.stringify({ 
-        message: 'Successfully subscribed to newsletter! Check your email for a welcome message.',
-        subscription: subscriptionData 
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-
+    return json({ message: 'Successfully subscribed! Check your email for a welcome message.' });
   } catch (error) {
     console.error('Error in newsletter-subscribe function:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to subscribe to newsletter. Please try again.' 
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return json({ error: 'Failed to subscribe to the newsletter. Please try again.' }, 500);
   }
 });

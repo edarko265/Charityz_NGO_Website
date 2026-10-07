@@ -1,13 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
-import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { NEWSLETTER_FROM, NEWSLETTER_REPLY_TO, escapeHtml, footerHtml, resend, safeUrl, unsubscribeHeaders, unsubscribeLinks } from '../_shared/email.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 interface NewsletterRequest {
   title: string;
@@ -108,95 +106,65 @@ serve(async (req) => {
 
     console.log(`Found ${subscribers.length} active subscribers`);
 
-    // Build email HTML
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    const safeTitle = escapeHtml(title);
+    const imageUrl = safeUrl(image_url);
+    const attachmentUrl = safeUrl(attachment_url);
+    const safeLinks = (links ?? [])
+      .map((link) => ({ url: safeUrl(link?.url), text: escapeHtml(String(link?.text ?? '')) }))
+      .filter((link): link is { url: string; text: string } => !!link.url && !!link.text);
+
+    // Shared body; each recipient gets their own unsubscribe footer
+    const contentHtml = `
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #2563eb; margin-bottom: 10px;">${title}</h1>
+          <h1 style="color: #dc2626; margin-bottom: 10px;">${safeTitle}</h1>
         </div>
-        
-        ${image_url ? `<img src="${image_url}" alt="${title}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px;" />` : ''}
-        
+        ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${safeTitle}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px;" />` : ''}
         <div style="line-height: 1.6; color: #374151;">
-          ${body.split('\n').map(p => `<p>${p}</p>`).join('')}
+          ${body.split('\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
         </div>
-        
-        ${links && links.length > 0 ? `
+        ${safeLinks.length > 0 ? `
           <div style="margin: 30px 0;">
             <h3 style="color: #1f2937; margin-bottom: 15px;">Related Links</h3>
             <ul style="list-style: none; padding: 0;">
-              ${links.map(link => `
-                <li style="margin-bottom: 10px;">
-                  <a href="${link.url}" style="color: #2563eb; text-decoration: none; font-weight: 500;">
-                    🔗 ${link.text}
-                  </a>
-                </li>
-              `).join('')}
+              ${safeLinks.map(link => `<li style="margin-bottom: 10px;"><a href="${escapeHtml(link.url)}" style="color: #dc2626; font-weight: 500;">${link.text}</a></li>`).join('')}
             </ul>
-          </div>
-        ` : ''}
-        
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
-        
+          </div>` : ''}
+        ${attachmentUrl ? `
+          <p style="margin: 30px 0; text-align: center;">
+            <a href="${escapeHtml(attachmentUrl)}" style="background: #dc2626; color: #fff; padding: 10px 18px; border-radius: 6px; text-decoration: none;">
+              Download ${escapeHtml(attachment_name || 'attachment')}
+            </a>
+          </p>` : ''}
         <div style="text-align: center; color: #6b7280; font-size: 14px;">
           <p>Thank you for being part of our community!</p>
-          <p style="margin: 20px 0;">
-            <strong>Charity Z</strong><br>
-            Supporting The Needy, Nurturing Dreams
-          </p>
-          <p style="font-size: 12px; color: #9ca3af;">
-            You're receiving this email because you subscribed to our newsletter.<br>
-            If you no longer wish to receive these emails, you can unsubscribe at any time.
-          </p>
-        </div>
-      </div>
-    `;
+          <p style="margin: 20px 0;"><strong>Charity Z</strong><br>Supporting The Needy, Nurturing Dreams</p>
+        </div>`;
 
-    // Prepare email data
-    const emailData: {
-      from: string;
-      to: string[];
-      subject: string;
-      html: string;
-      attachments?: { filename: string; content: string }[];
-    } = {
-      from: 'Charity Z <info@charityz.org>',
-      to: subscribers.map(s => s.email),
-      subject: subject,
-      html: emailHtml,
-    };
-
-    // Add attachment if provided
-    if (attachment_url && attachment_name) {
-      console.log('Fetching attachment from URL...');
-      try {
-        const attachmentResponse = await fetch(attachment_url);
-        if (!attachmentResponse.ok) {
-          throw new Error('Failed to fetch attachment');
-        }
-        const attachmentBuffer = await attachmentResponse.arrayBuffer();
-        const attachmentBase64 = btoa(String.fromCharCode(...new Uint8Array(attachmentBuffer)));
-        
-        emailData.attachments = [{
-          filename: attachment_name,
-          content: attachmentBase64,
-        }];
-      } catch (attachmentError) {
-        console.error('Error fetching attachment:', attachmentError);
-        // Continue without attachment
-      }
-    }
-
-    // Send newsletter email
+    // One email per subscriber (never expose the list), sent through Resend's batch API in groups of 100
     console.log('Sending newsletter to subscribers...');
-    const { data: emailResponse, error: emailError } = await resend.emails.send(emailData);
+    let sentCount = 0;
+    for (let i = 0; i < subscribers.length; i += 100) {
+      const chunk = subscribers.slice(i, i + 100);
+      const emails = await Promise.all(chunk.map(async ({ email }) => {
+        const { page } = await unsubscribeLinks(email);
+        return {
+          from: NEWSLETTER_FROM,
+          replyTo: NEWSLETTER_REPLY_TO,
+          to: [email],
+          subject,
+          headers: await unsubscribeHeaders(email),
+          html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">${contentHtml}${footerHtml(page)}</div>`,
+        };
+      }));
 
-    if (emailError) {
-      console.error('Error sending newsletter:', emailError);
-      throw new Error('Failed to send newsletter');
+      const { error: batchError } = await resend.batch.send(emails);
+      if (batchError) {
+        console.error(`Newsletter batch starting at ${i} failed:`, batchError);
+        if (sentCount === 0) throw new Error('Failed to send newsletter');
+        break;
+      }
+      sentCount += chunk.length;
     }
-
-    console.log('Newsletter sent successfully:', emailResponse);
 
     // Save newsletter record
     const { error: saveError } = await supabaseAdmin
@@ -210,7 +178,7 @@ serve(async (req) => {
         attachment_url,
         attachment_name,
         sent_by: user.id,
-        recipient_count: subscribers.length,
+        recipient_count: sentCount,
       });
 
     if (saveError) {
@@ -220,9 +188,8 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        message: 'Newsletter sent successfully!',
-        sent_count: subscribers.length,
-        email_id: emailResponse?.id
+        message: sentCount === subscribers.length ? 'Newsletter sent successfully!' : 'Newsletter partly sent; check the function logs.',
+        sent_count: sentCount
       }),
       {
         status: 200,
@@ -234,7 +201,7 @@ serve(async (req) => {
     console.error('Error in send-newsletter function:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to send newsletter. Please try again.' 
+        error: 'Failed to send newsletter. Please try again.' 
       }),
       {
         status: 500,
