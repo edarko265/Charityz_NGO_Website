@@ -76,7 +76,7 @@ const ProjectsManagement = () => {
       if (error) throw error;
       setProjects((data || []).map(p => ({
         ...p,
-        images: (p.images as any) || []
+        images: (p.images as unknown as Project['images']) || []
       })));
     } catch (error) {
       console.error('Error fetching projects:', error);

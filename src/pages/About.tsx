@@ -170,10 +170,10 @@ const About = () => {
               const Icon = milestone.icon;
               return (
                 <div key={index} className="flex items-center mb-8 animate-fade-in" style={{animationDelay: `${index * 150}ms`}}>
-                  <div className="flex-shrink-0 w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-6">
+                  <div className="shrink-0 w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-6">
                     <Icon className="w-6 h-6" />
                   </div>
-                  <div className="flex-grow">
+                  <div className="grow">
                     <Badge variant="outline" className="mb-2">{milestone.year}</Badge>
                     <p className="text-lg font-medium">{milestone.event}</p>
                   </div>

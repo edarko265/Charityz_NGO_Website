@@ -87,7 +87,7 @@ const ProjectDetailModal = ({ project, open, onOpenChange }: ProjectDetailModalP
                   <Button
                     variant="outline"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-xs hover:bg-background/90"
                     onClick={prevImage}
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -95,7 +95,7 @@ const ProjectDetailModal = ({ project, open, onOpenChange }: ProjectDetailModalP
                   <Button
                     variant="outline"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-xs hover:bg-background/90"
                     onClick={nextImage}
                   >
                     <ChevronRight className="w-4 h-4" />

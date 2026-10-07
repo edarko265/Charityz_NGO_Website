@@ -48,7 +48,7 @@ const Partnerships = () => {
       
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-primary/5 to-secondary/5 py-20">
+        <section className="bg-linear-to-br from-primary/5 to-secondary/5 py-20">
           <div className="container">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
@@ -134,19 +134,19 @@ const Partnerships = () => {
                   <h3 className="text-2xl font-bold mb-4">Partnership Benefits</h3>
                   <ul className="space-y-3 text-muted-foreground">
                     <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0"></div>
                       <span><strong>Transparent Impact Reporting:</strong> Regular updates with detailed metrics and success stories</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0"></div>
                       <span><strong>Custom Partnership Packages:</strong> Tailored solutions to meet your specific CSR goals</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0"></div>
                       <span><strong>Employee Engagement Opportunities:</strong> Volunteer programs and team building activities</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0"></div>
                       <span><strong>Brand Recognition:</strong> Co-marketing opportunities and event visibility</span>
                     </li>
                   </ul>

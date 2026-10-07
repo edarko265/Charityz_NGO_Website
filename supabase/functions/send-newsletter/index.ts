@@ -109,7 +109,7 @@ serve(async (req) => {
     console.log(`Found ${subscribers.length} active subscribers`);
 
     // Build email HTML
-    let emailHtml = `
+    const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="color: #2563eb; margin-bottom: 10px;">${title}</h1>
@@ -153,7 +153,13 @@ serve(async (req) => {
     `;
 
     // Prepare email data
-    const emailData: any = {
+    const emailData: {
+      from: string;
+      to: string[];
+      subject: string;
+      html: string;
+      attachments?: { filename: string; content: string }[];
+    } = {
       from: 'Charity Z <info@charityz.org>',
       to: subscribers.map(s => s.email),
       subject: subject,

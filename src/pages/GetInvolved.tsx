@@ -320,7 +320,7 @@ const GetInvolved = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="shadow-card bg-gradient-to-br from-primary/5 to-secondary/5">
+                  <Card className="shadow-card bg-linear-to-br from-primary/5 to-secondary/5">
                     <CardContent className="p-6 text-center">
                       <Shield className="w-8 h-8 mx-auto mb-3 text-primary" />
                       <h3 className="font-semibold mb-2">100% Secure Donations</h3>
@@ -616,7 +616,7 @@ const GetInvolved = () => {
                       <ul className="space-y-3">
                         {membershipBenefits.map((benefit, index) => (
                           <li key={index} className="flex items-start">
-                            <ArrowRight className="w-4 h-4 mr-2 mt-0.5 text-primary flex-shrink-0" />
+                            <ArrowRight className="w-4 h-4 mr-2 mt-0.5 text-primary shrink-0" />
                             <span className="text-sm">{benefit}</span>
                           </li>
                         ))}

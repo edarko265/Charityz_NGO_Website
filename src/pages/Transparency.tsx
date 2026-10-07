@@ -109,31 +109,31 @@ const Transparency = () => {
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Annual Financial Audits:</strong> Our finances are audited annually by an independent certified public accounting firm
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Board Oversight:</strong> Our independent board of directors provides governance and strategic direction
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Regular Reporting:</strong> We publish quarterly impact reports and annual financial statements
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Donor Privacy:</strong> We maintain strict policies to protect donor information
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Impact Measurement:</strong> We track and report on specific outcomes and impact metrics for all programs
                     </div>
@@ -149,25 +149,25 @@ const Transparency = () => {
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>501(c)(3) Status:</strong> Registered non-profit organization with the IRS
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>GuideStar Platinum Seal:</strong> Highest level of transparency recognition
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>BBB Accredited Charity:</strong> Meets all 20 standards for charity accountability
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Charity Navigator 4-Star Rating:</strong> Highest rating for financial health and accountability
                     </div>
@@ -200,25 +200,25 @@ const Transparency = () => {
               <CardContent className="space-y-4">
                 <ul className="space-y-3">
                   <li className="flex items-start">
-                    <FileText className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <FileText className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Annual Reports:</strong> Comprehensive overview of our programs, finances, and impact
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <FileText className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <FileText className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Quarterly Updates:</strong> Regular newsletters with project updates and impact stories
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <FileText className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <FileText className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>Financial Statements:</strong> Audited financial statements available upon request
                     </div>
                   </li>
                   <li className="flex items-start">
-                    <FileText className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <FileText className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                     <div>
                       <strong>IRS Form 990:</strong> Public tax documents available on our website and GuideStar
                     </div>

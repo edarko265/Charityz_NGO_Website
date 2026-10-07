@@ -90,8 +90,7 @@ const DonationForm = () => {
       return
     }
 
-    // @ts-ignore - PaystackPop will be loaded from script
-    const handler = PaystackPop.setup({
+    const handler = window.PaystackPop.setup({
       key: paystackKey,
       email: email,
       amount: amount * 100, // Paystack expects amount in kobo (cents)
@@ -103,7 +102,7 @@ const DonationForm = () => {
         designation: formData.designation,
         donation_type: formData.donationType
       },
-      callback: async function(response: any) {
+      callback: async function(response: { reference: string }) {
         await handlePaymentSuccess(donationId, response.reference)
       },
       onClose: function() {

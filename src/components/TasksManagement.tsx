@@ -376,7 +376,7 @@ const TasksManagement = () => {
                   <Label htmlFor="priority">Priority</Label>
                   <Select
                     value={formData.priority}
-                    onValueChange={(value) => setFormData({ ...formData, priority: value as any })}
+                    onValueChange={(value) => setFormData({ ...formData, priority: value as Task['priority'] })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -393,7 +393,7 @@ const TasksManagement = () => {
                   <Label htmlFor="status">Status</Label>
                   <Select
                     value={formData.status}
-                    onValueChange={(value) => setFormData({ ...formData, status: value as any })}
+                    onValueChange={(value) => setFormData({ ...formData, status: value as Task['status'] })}
                   >
                     <SelectTrigger>
                       <SelectValue />

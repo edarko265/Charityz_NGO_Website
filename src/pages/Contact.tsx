@@ -217,15 +217,15 @@ const Contact = () => {
                         <h4 className="font-medium mb-2">{location.city}</h4>
                         <div className="space-y-1 text-sm text-muted-foreground">
                           <div className="flex items-start">
-                            <MapPin className="w-3 h-3 mr-2 mt-0.5 flex-shrink-0" />
+                            <MapPin className="w-3 h-3 mr-2 mt-0.5 shrink-0" />
                             <span>{location.address}</span>
                           </div>
                           <div className="flex items-center">
-                            <Phone className="w-3 h-3 mr-2 flex-shrink-0" />
+                            <Phone className="w-3 h-3 mr-2 shrink-0" />
                             <span>{location.phone}</span>
                           </div>
                           <div className="flex items-center">
-                            <Mail className="w-3 h-3 mr-2 flex-shrink-0" />
+                            <Mail className="w-3 h-3 mr-2 shrink-0" />
                             <a href={`mailto:${location.email}`} className="text-primary hover:underline">
                               {location.email}
                             </a>

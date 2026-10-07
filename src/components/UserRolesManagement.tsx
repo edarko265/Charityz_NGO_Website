@@ -202,7 +202,7 @@ const UserRolesManagement = () => {
                     <Select
                       value={user.role}
                       onValueChange={(value) =>
-                        updateUserRole(user.id, value as any)
+                        updateUserRole(user.id, value as UserWithRole['role'])
                       }
                     >
                       <SelectTrigger className="w-32">

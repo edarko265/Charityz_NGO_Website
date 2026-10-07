@@ -23,7 +23,7 @@ interface Project {
   description: string;
   primary_image_url: string | null;
   category: string;
-  images: any;
+  images: { url: string; isPrimary: boolean }[];
 }
 
 const Projects = () => {
@@ -65,7 +65,10 @@ const Projects = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProjects(data || []);
+      setProjects((data || []).map(p => ({
+        ...p,
+        images: (p.images as unknown as Project['images']) || []
+      })));
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {

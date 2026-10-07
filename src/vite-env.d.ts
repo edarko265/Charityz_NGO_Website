@@ -8,3 +8,14 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface PaystackHandler {
+  openIframe: () => void;
+}
+
+interface Window {
+  // Loaded from https://js.paystack.co/v1/inline.js in index.html
+  PaystackPop: {
+    setup: (options: Record<string, unknown>) => PaystackHandler;
+  };
+}

@@ -125,8 +125,8 @@ const AdminDashboard = () => {
     if (error) throw error
       setDonations(data?.map(d => ({ 
         ...d, 
-        donation_type: d.donation_type as any,
-        payment_status: d.payment_status as any 
+        donation_type: d.donation_type as Donation['donation_type'],
+        payment_status: d.payment_status as Donation['payment_status'] 
       })) || []);
   }
 

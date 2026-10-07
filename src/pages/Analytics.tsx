@@ -138,7 +138,7 @@ const Analytics = () => {
     }
   };
 
-  const processDonationTrends = (donations: any[]) => {
+  const processDonationTrends = (donations: { amount: number; created_at: string; payment_status: string }[]) => {
     const monthlyData: { [key: string]: { amount: number; count: number } } = {};
 
     donations.forEach((donation) => {
@@ -162,7 +162,7 @@ const Analytics = () => {
       .slice(-6); // Last 6 months
   };
 
-  const processVolunteerMetrics = (volunteers: any[]) => {
+  const processVolunteerMetrics = (volunteers: { status: string | null }[]) => {
     const statusCounts: { [key: string]: number } = {};
 
     volunteers.forEach((volunteer) => {
@@ -176,7 +176,7 @@ const Analytics = () => {
     }));
   };
 
-  const processGeographicData = (locations: any[]) => {
+  const processGeographicData = (locations: { location: string | null }[]) => {
     const locationCounts: { [key: string]: number } = {};
 
     locations.forEach((item) => {
@@ -190,7 +190,7 @@ const Analytics = () => {
       .slice(0, 10);
   };
 
-  const exportToCSV = (data: any[], filename: string) => {
+  const exportToCSV = <T extends object>(data: T[], filename: string) => {
     if (data.length === 0) return;
 
     const headers = Object.keys(data[0]).join(",");

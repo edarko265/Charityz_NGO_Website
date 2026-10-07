@@ -154,11 +154,11 @@ const NewsletterManagement = () => {
       setIsDialogOpen(false);
       fetchNewsletters();
       fetchSubscriberCount();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error sending newsletter:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to send newsletter',
+        description: (error instanceof Error && error.message) || 'Failed to send newsletter',
         variant: 'destructive',
       });
     } finally {
