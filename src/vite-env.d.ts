@@ -15,7 +15,7 @@ interface PaystackHandler {
 
 interface Window {
   // Loaded from https://js.paystack.co/v1/inline.js in index.html
-  PaystackPop: {
+  PaystackPop?: {
     setup: (options: Record<string, unknown>) => PaystackHandler;
   };
 }

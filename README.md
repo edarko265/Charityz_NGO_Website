@@ -34,7 +34,7 @@ Edge Function secrets (set in Supabase > Edge Functions > Secrets, never in the 
 
 | Secret | Used by |
 | --- | --- |
-| `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SECRET_KEY` | `get-paystack-key`, `paystack-webhook` |
+| `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SECRET_KEY` | `create-donation`, `verify-donation`, `paystack-webhook` |
 | `RESEND_API_KEY` | `send-contact-email`, `send-newsletter` |
 | `OPENAI_API_KEY` | `ai-chatbot` |
 
@@ -76,5 +76,19 @@ In hPanel, create a website from this GitHub repository with these build setting
 
 `public/.htaccess` is copied into the build so that deep links such as `/projects` or `/admin` load the app instead of returning 404.
 
-After DNS points at Hostinger, set the Paystack webhook URL to:
+## Payments (Paystack)
+
+1. `create-donation` validates the form and stores a **pending** donation, then the browser opens Paystack (card or mobile money).
+2. When Paystack reports success, `verify-donation` checks the payment with Paystack's API, confirms the amount and currency match, marks the donation **successful** and issues a receipt.
+3. `paystack-webhook` runs the same check when Paystack notifies us, so donations are recorded even if the donor closes the page.
+
+The browser can't write donations or receipts directly; only these functions can.
+
+In the Paystack dashboard (Settings > API Keys & Webhooks), set the webhook URL for both test and live mode to:
 `https://<your-project-ref>.supabase.co/functions/v1/paystack-webhook`
+
+**Going live:** replace the test keys with live ones. No code changes are needed:
+
+```sh
+supabase secrets set PAYSTACK_PUBLIC_KEY=pk_live_... PAYSTACK_SECRET_KEY=sk_live_...
+```

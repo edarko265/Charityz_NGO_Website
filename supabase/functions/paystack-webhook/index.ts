@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { confirmDonation } from '../_shared/donations.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -62,84 +63,39 @@ serve(async (req) => {
     const event = JSON.parse(payload);
     console.log('Webhook event type:', event.event);
     
-    // Handle successful charge
+    // Handle successful charge: re-check with Paystack's API and match the amount before trusting it
     if (event.event === 'charge.success') {
-      const { data } = event;
-      const donationId = data.metadata?.donation_id;
-      
-      if (!donationId) {
-        console.error('No donation ID in webhook payload');
-        return new Response(JSON.stringify({ error: 'Missing donation ID' }), {
+      const reference = event.data?.reference;
+      if (!reference) {
+        return new Response(JSON.stringify({ error: 'Missing reference' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      
-      // Update donation status to successful
-      const { error: updateError } = await supabase
-        .from('donations')
-        .update({ 
-          payment_status: 'successful',
-          payment_reference: data.reference,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', donationId);
-      
-      if (updateError) {
-        console.error('Error updating donation:', updateError);
-        throw updateError;
-      }
-      
-      // Generate receipt
-      const receiptNumber = `CR-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-      
-      const { error: receiptError } = await supabase
-        .from('donation_receipts')
-        .insert({
-          donation_id: donationId,
-          receipt_number: receiptNumber,
-          generated_at: new Date().toISOString(),
-        });
-      
-      if (receiptError) {
-        console.error('Error creating receipt:', receiptError);
-      } else {
-        console.log('Receipt generated successfully:', receiptNumber);
-      }
-      
-      console.log('Successfully processed payment for donation:', donationId);
+      const result = await confirmDonation(reference);
+      console.log('Processed charge.success:', reference, result.status);
     }
-    
+
     // Handle failed charge
     if (event.event === 'charge.failed') {
-      const { data } = event;
-      const donationId = data.metadata?.donation_id;
-      
-      if (donationId) {
+      const reference = event.data?.reference;
+      if (reference) {
         const { error: updateError } = await supabase
           .from('donations')
-          .update({ 
-            payment_status: 'failed',
-            payment_reference: data.reference,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', donationId);
-        
-        if (updateError) {
-          console.error('Error updating failed donation:', updateError);
-        } else {
-          console.log('Marked donation as failed:', donationId);
-        }
+          .update({ payment_status: 'failed', payment_reference: reference })
+          .eq('id', reference)
+          .eq('payment_status', 'pending');
+        if (updateError) console.error('Error updating failed donation:', updateError);
       }
     }
-    
+
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
     
   } catch (error) {
     console.error('Error in paystack-webhook function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: 'Webhook processing failed' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

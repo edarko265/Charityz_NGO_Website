@@ -32,3 +32,6 @@ dist-ssr
 # Supabase local
 supabase/.temp
 supabase/.branches
+
+# Deno (local type-checking of Edge Functions)
+deno.lock

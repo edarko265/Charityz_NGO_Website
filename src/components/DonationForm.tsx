@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,26 +33,7 @@ const DonationForm = () => {
     anonymous: false
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [paystackKey, setPaystackKey] = useState<string>('')
-
-  useEffect(() => {
-    // Fetch Paystack public key securely from edge function
-    const fetchPaystackKey = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-paystack-key')
-        if (error) throw error
-        setPaystackKey(data.publicKey)
-      } catch (error) {
-        console.error('Error fetching Paystack key:', error)
-        toast({
-          title: "Configuration Error",
-          description: "Payment system is not properly configured. Please contact support.",
-          variant: "destructive"
-        })
-      }
-    }
-    fetchPaystackKey()
-  }, [])
+  const [isVerifying, setIsVerifying] = useState(false)
 
   const donationAmounts = [25, 50, 100, 250, 500, 1000]
   const designations = [
@@ -80,30 +61,69 @@ const DonationForm = () => {
     }))
   }
 
-  const initializePaystack = (amount: number, email: string, donationId: string) => {
-    if (!paystackKey) {
-      toast({
-        title: "Payment Error",
-        description: "Payment system is not available. Please contact support.",
-        variant: "destructive"
-      })
-      return
-    }
+  const resetForm = () => setFormData({
+    amount: 0,
+    customAmount: '',
+    donationType: 'one-time',
+    designation: 'general',
+    donorName: '',
+    donorEmail: '',
+    donorPhone: '',
+    anonymous: false
+  })
 
+  // The server confirms the payment with Paystack and checks the amount before recording it
+  const verifyPayment = async (reference: string) => {
+    setIsVerifying(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-donation', { body: { reference } })
+      if (error) throw error
+
+      if (data.status === 'successful') {
+        toast({
+          title: "Donation Successful! 🎉",
+          description: `Thank you for your generous donation. Receipt number: ${data.receiptNumber}. Paystack will email you a payment receipt.`,
+        })
+        resetForm()
+      } else if (data.status === 'pending') {
+        toast({
+          title: "Payment Processing",
+          description: "Your payment is still being confirmed. We'll record it as soon as Paystack confirms it.",
+        })
+      } else {
+        toast({
+          title: "Payment Not Completed",
+          description: data.reason || "Your payment could not be confirmed. You have not been charged twice; please try again.",
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      console.error('Error verifying payment:', error)
+      toast({
+        title: "Payment Received, Confirmation Delayed",
+        description: "We couldn't confirm your payment just now. It will be recorded automatically once Paystack notifies us.",
+      })
+    } finally {
+      setIsVerifying(false)
+    }
+  }
+
+  const openPaystack = (session: { reference: string; publicKey: string; amountInPesewas: number; currency: string; email: string }) => {
     const handler = window.PaystackPop.setup({
-      key: paystackKey,
-      email: email,
-      amount: amount * 100, // Paystack expects amount in kobo (cents)
-      currency: 'GHS', // Ghana Cedis
-      ref: donationId,
+      key: session.publicKey,
+      email: session.email,
+      amount: session.amountInPesewas,
+      currency: session.currency,
+      ref: session.reference,
+      channels: ['card', 'mobile_money'],
       metadata: {
-        donation_id: donationId,
-        donor_name: formData.donorName,
+        donation_id: session.reference,
+        donor_name: formData.anonymous ? 'Anonymous' : formData.donorName,
         designation: formData.designation,
         donation_type: formData.donationType
       },
-      callback: async function(response: { reference: string }) {
-        await handlePaymentSuccess(donationId, response.reference)
+      callback: function(response: { reference: string }) {
+        verifyPayment(response.reference)
       },
       onClose: function() {
         toast({
@@ -113,72 +133,6 @@ const DonationForm = () => {
       }
     })
     handler.openIframe()
-  }
-
-  const handlePaymentSuccess = async (donationId: string, paymentReference: string) => {
-    try {
-      // Update donation status to successful
-      const { error } = await supabase
-        .from('donations')
-        .update({ 
-          payment_status: 'successful',
-          payment_reference: paymentReference,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', donationId)
-
-      if (error) throw error
-
-      // Generate receipt
-      await generateReceipt(donationId)
-
-      toast({
-        title: "Donation Successful! 🎉",
-        description: "Thank you for your generous donation. A receipt will be sent to your email.",
-      })
-
-      // Reset form
-      setFormData({
-        amount: 0,
-        customAmount: '',
-        donationType: 'one-time',
-        designation: 'general',
-        donorName: '',
-        donorEmail: '',
-        donorPhone: '',
-        anonymous: false
-      })
-
-    } catch (error) {
-      console.error('Error updating donation:', error)
-      toast({
-        title: "Error",
-        description: "There was an issue processing your donation. Please contact support.",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const generateReceipt = async (donationId: string) => {
-    try {
-      const receiptNumber = `CZ-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
-      
-      const { error } = await supabase
-        .from('donation_receipts')
-        .insert({
-          donation_id: donationId,
-          receipt_number: receiptNumber,
-          generated_at: new Date().toISOString()
-        })
-
-      if (error) throw error
-
-      // Here you could also trigger an email with the receipt
-      // This would typically be done via an edge function
-      
-    } catch (error) {
-      console.error('Error generating receipt:', error)
-    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -205,32 +159,22 @@ const DonationForm = () => {
     setIsLoading(true)
 
     try {
-      // Create donation record
-      const donationData = {
-        donor_name: formData.anonymous ? 'Anonymous' : formData.donorName,
-        donor_email: formData.donorEmail,
-        donor_phone: formData.donorPhone || null,
-        amount: formData.amount,
-        currency: 'GHS',
-        donation_type: formData.donationType,
-        designation: formData.designation,
-        anonymous: formData.anonymous,
-        payment_status: 'pending',
-        payment_reference: '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+      if (!window.PaystackPop) throw new Error('Paystack script not loaded')
 
-      const { data, error } = await supabase
-        .from('donations')
-        .insert(donationData)
-        .select()
-        .single()
-
+      const { data, error } = await supabase.functions.invoke('create-donation', {
+        body: {
+          amount: formData.amount,
+          donorName: formData.donorName,
+          donorEmail: formData.donorEmail,
+          donorPhone: formData.donorPhone,
+          donationType: formData.donationType,
+          designation: formData.designation,
+          anonymous: formData.anonymous
+        }
+      })
       if (error) throw error
 
-      // Initialize Paystack payment
-      initializePaystack(formData.amount, formData.donorEmail, data.id)
+      openPaystack(data)
 
     } catch (error) {
       console.error('Error creating donation:', error)
@@ -417,10 +361,10 @@ const DonationForm = () => {
               type="submit"
               size="lg"
               className="w-full"
-              disabled={isLoading || !finalAmount || finalAmount < 5 || !paystackKey}
+              disabled={isLoading || isVerifying || !finalAmount || finalAmount < 5}
             >
               <CreditCard className="h-4 w-4 mr-2" />
-              {isLoading ? 'Processing...' : `Donate GH₵${finalAmount.toFixed(2)}`}
+              {isVerifying ? 'Confirming payment...' : isLoading ? 'Processing...' : `Donate GH₵${finalAmount.toFixed(2)}`}
             </Button>
           </form>
         </CardContent>
@@ -433,8 +377,7 @@ const DonationForm = () => {
             <h3 className="font-semibold">Secure Payment Methods</h3>
             <div className="flex justify-center items-center space-x-4 text-sm text-muted-foreground">
               <span>💳 Credit/Debit Cards</span>
-              <span>📱 Mobile Money</span>
-              <span>🏦 Bank Transfer</span>
+              <span>📱 Mobile Money (MTN, Telecel, AirtelTigo)</span>
             </div>
             <p className="text-sm text-muted-foreground">
               All donations are processed securely through Paystack. We accept international payments.
