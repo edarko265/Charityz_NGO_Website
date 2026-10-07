@@ -1,63 +1,80 @@
-# Welcome to my NGO website full-stack project for Charityz Ghana. www.charityz.com
+# Charity Z — NGO Website
 
-## Project info
+Full-stack website for Charity Z Ghana ([www.charityz.com](https://www.charityz.com)): donations (Paystack), volunteer and membership sign-up, projects, events, newsletter, an AI assistant, and an admin dashboard.
 
-## How can I edit this code?
+## Tech stack
 
-There are several ways of editing your application.
+- **Frontend:** Vite, React 18, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Supabase (Postgres + Row Level Security, Auth, Storage, Edge Functions)
+- **Payments:** Paystack (cards and mobile money, GHS)
+- **Email:** Resend
+- **AI chatbot:** OpenAI, called from the `ai-chatbot` Edge Function
+- **Hosting:** Hostinger (static build from GitHub, auto-deploy on push to `main`)
 
-**Use VS CODE**
-or
-**Use your preferred IDE**
+## Local development
 
-If you want to work locally using your own IDE, you can clone this repo and push changes.
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Requires Node.js 20+.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install
+cp .env.example .env   # then fill in your Supabase URL and anon key
+npm run dev            # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+## Environment variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Frontend (set in `.env` locally and in Hostinger's environment variables):
 
-**Use GitHub Codespaces**
+| Variable | Where to find it |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Supabase > Project Settings > API > Project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase > Project Settings > API > anon / publishable key |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Edge Function secrets (set in Supabase > Edge Functions > Secrets, never in the frontend):
 
-## What technologies are used for this project?
+| Secret | Used by |
+| --- | --- |
+| `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SECRET_KEY` | `get-paystack-key`, `paystack-webhook` |
+| `RESEND_API_KEY` | `send-contact-email`, `send-newsletter` |
+| `OPENAI_API_KEY` | `ai-chatbot` |
 
-This project is built with:
+`SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are provided to Edge Functions automatically.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Database setup (new Supabase project)
 
+All schema lives in `supabase/migrations`. With the [Supabase CLI](https://supabase.com/docs/guides/cli):
 
-## Can I connect a custom domain to my project?
+```sh
+supabase login
+supabase link --project-ref <your-project-ref>
+supabase db push                 # creates all tables, policies, functions and the storage bucket
+supabase functions deploy        # deploys every Edge Function in supabase/functions
+supabase secrets set PAYSTACK_PUBLIC_KEY=... PAYSTACK_SECRET_KEY=... RESEND_API_KEY=... OPENAI_API_KEY=...
+```
 
-Yes, you can!
+Then, in the Supabase dashboard:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. **Authentication > URL Configuration:** set Site URL to `https://www.charityz.com` and add it to Redirect URLs.
+2. **Make yourself an admin:** sign up on the site, then run in the SQL editor:
+   ```sql
+   insert into public.user_roles (user_id, role)
+   select id, 'admin' from auth.users where email = 'you@example.com';
+   ```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Deploying to Hostinger
+
+In hPanel, create a website from this GitHub repository with these build settings:
+
+| Setting | Value |
+| --- | --- |
+| Framework | Vite |
+| Branch | `main` |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Node version | 20.x or newer |
+| Environment variables | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` |
+
+`public/.htaccess` is copied into the build so that deep links such as `/projects` or `/admin` load the app instead of returning 404.
+
+After DNS points at Hostinger, set the Paystack webhook URL to:
+`https://<your-project-ref>.supabase.co/functions/v1/paystack-webhook`

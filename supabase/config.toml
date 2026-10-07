@@ -1,4 +1,4 @@
-project_id = "xyghxlddqfvcgxatbuxk"
+project_id = "charityz"
 
 [functions.send-newsletter]
 verify_jwt = true
