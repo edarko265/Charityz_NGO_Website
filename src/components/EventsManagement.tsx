@@ -176,7 +176,7 @@ const EventsManagement = () => {
               Add Event
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent aria-describedby={undefined} className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingEvent ? 'Edit Event' : 'Add New Event'}

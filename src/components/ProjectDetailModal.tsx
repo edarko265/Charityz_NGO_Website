@@ -72,7 +72,7 @@ const ProjectDetailModal = ({ project, open, onOpenChange }: ProjectDetailModalP
       onOpenChange(isOpen);
       if (!isOpen) setCurrentImageIndex(0);
     }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 animate-scale-in">
+      <DialogContent aria-describedby={undefined} className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 animate-scale-in">
         <div className="relative">
           {validImages.length > 0 && (
             <div className="relative h-[400px] overflow-hidden">

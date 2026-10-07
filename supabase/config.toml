@@ -5,6 +5,11 @@ project_id = "charityz"
 site_url = "https://www.charityz.org"
 additional_redirect_urls = ["https://www.charityz.org/**", "https://charityz.org/**", "http://localhost:8080/**"]
 
+# Supabase's default is 2 auth emails per hour for the whole project, which blocks sign-ups.
+# Resend's free plan allows 100 emails a day, so stay well inside that.
+[auth.rate_limit]
+email_sent = 30
+
 [auth.email]
 enable_signup = true
 enable_confirmations = true

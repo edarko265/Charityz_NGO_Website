@@ -172,7 +172,7 @@ const FAQManagement = () => {
               Add FAQ Item
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent aria-describedby={undefined} className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingItem ? 'Edit FAQ Item' : 'Add New FAQ Item'}</DialogTitle>
             </DialogHeader>

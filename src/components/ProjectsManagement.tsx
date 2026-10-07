@@ -272,7 +272,7 @@ const ProjectsManagement = () => {
               Add Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent aria-describedby={undefined} className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingProject ? 'Edit Project' : 'Add New Project'}
