@@ -7,6 +7,7 @@ import { MessageCircle, X, Send, Bot, User, Heart, Users, Briefcase, Mail, Loade
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 
 interface Message {
   id: string;
@@ -14,6 +15,7 @@ interface Message {
   isBot: boolean;
   timestamp: Date;
   navigationActions?: NavigationAction[];
+  isError?: boolean;
 }
 
 interface NavigationAction {
@@ -21,6 +23,9 @@ interface NavigationAction {
   path: string;
   description?: string;
 }
+
+// An error whose message is safe to show the visitor as the assistant's reply
+class ChatbotError extends Error {}
 
 const Chatbot = () => {
   const { toast } = useToast();
@@ -46,24 +51,6 @@ const Chatbot = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const getCurrentPageContext = () => {
-    const path = location.pathname;
-    const pageContexts: { [key: string]: string } = {
-      '/': 'home page with hero section, about, projects, and get involved sections',
-      '/about': 'about page with detailed information about Charity Z\'s mission, vision, and team',
-      '/projects': 'projects page showing current initiatives and their progress',
-      '/get-involved': 'get involved page with donation form, volunteer signup, and membership options',
-      '/events': 'events page listing upcoming fundraising and awareness events',
-      '/contact': 'contact page with contact information, form, and office locations',
-      '/dashboard': 'user dashboard for donors, volunteers, and members',
-      '/auth': 'authentication page for login and registration',
-      '/faq': 'frequently asked questions page',
-      '/partnerships': 'partnerships page showing organizational collaborations'
-    };
-    
-    return pageContexts[path] || `page at ${path}`;
-  };
 
   const detectNavigationIntents = (text: string): NavigationAction[] => {
     const actions: NavigationAction[] = [];
@@ -131,21 +118,24 @@ const Chatbot = () => {
     );
   };
 
-  const getAIResponse = async (userMessage: string): Promise<string> => {
-    try {
-      const currentPage = getCurrentPageContext();
-      const enhancedMessage = `User is currently on the ${currentPage}. User message: ${userMessage}`;
-      
-      const { data, error } = await supabase.functions.invoke('ai-chatbot', {
-        body: { message: enhancedMessage }
-      });
-      
-      if (error) throw error;
-      return data.reply;
-    } catch (error) {
-      console.error('Error getting AI response:', error);
+  const getAIResponse = async (userMessage: string, previous: Message[]): Promise<string> => {
+    const history = previous
+      .filter((m) => !m.isError && m.id !== "1")
+      .map((m) => ({ role: m.isBot ? "assistant" : "user", content: m.text }));
+
+    const { data, error } = await supabase.functions.invoke('ai-chatbot', {
+      body: { message: userMessage, history, path: location.pathname }
+    });
+
+    if (error) {
+      // Non-2xx responses still carry a friendly reply (e.g. when rate limited)
+      if (error instanceof FunctionsHttpError) {
+        const body = await error.context.json().catch(() => null);
+        if (body?.reply) throw new ChatbotError(body.reply);
+      }
       throw error;
     }
+    return data.reply;
   };
 
   const handleSendMessage = async () => {
@@ -164,7 +154,7 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const response = await getAIResponse(currentMessage);
+      const response = await getAIResponse(currentMessage, messages);
       const navigationActions = detectNavigationIntents(response);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -179,17 +169,22 @@ const Chatbot = () => {
       console.error('Chatbot error:', error);
       const errorResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I apologize, but I'm having trouble processing your message right now. Please try again in a moment, or feel free to contact our team directly.",
+        text: error instanceof ChatbotError
+          ? error.message
+          : "I apologize, but I'm having trouble processing your message right now. Please try again in a moment, or feel free to contact our team directly.",
         isBot: true,
         timestamp: new Date(),
+        isError: true,
       };
-      
+
       setMessages(prev => [...prev, errorResponse]);
-      toast({
-        title: "Connection Error",
-        description: "Unable to connect to our AI assistant. Please try again.",
-        variant: "destructive"
-      });
+      if (!(error instanceof ChatbotError)) {
+        toast({
+          title: "Connection Error",
+          description: "Unable to connect to our AI assistant. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsTyping(false);
     }
@@ -276,7 +271,7 @@ const Chatbot = () => {
                     </div>
                     <div className="space-y-2">
                       <div
-                        className={`px-3 py-2 rounded-lg text-sm ${
+                        className={`px-3 py-2 rounded-lg text-sm whitespace-pre-line break-words ${
                           message.isBot
                             ? "bg-muted text-muted-foreground"
                             : "bg-primary text-primary-foreground"

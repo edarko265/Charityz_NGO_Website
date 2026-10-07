@@ -1,18 +1,93 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import Anthropic from 'npm:@anthropic-ai/sdk@^0.131.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Input sanitization helper
-function sanitizeMessage(message: string): string {
-  if (typeof message !== 'string') return '';
-  // Limit message length and remove potentially harmful content
-  return message.trim().slice(0, 2000).replace(/[<>]/g, '');
+const anthropic = new Anthropic(); // reads ANTHROPIC_API_KEY
+const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+const MODEL = 'claude-opus-5-5';
+const MAX_MESSAGE_CHARS = 2000;
+const MAX_HISTORY_MESSAGES = 12;
+// Abuse protection for a public, unauthenticated endpoint
+const PER_VISITOR_LIMIT = 20;          // messages per visitor...
+const PER_VISITOR_WINDOW_SECONDS = 600; // ...per 10 minutes
+const GLOBAL_DAILY_LIMIT = 2000;       // messages per day across all visitors
+
+const SYSTEM_PROMPT = `You are the website assistant for Charity Z, a Ghanaian charity supporting the needy and nurturing dreams in communities across Ghana and beyond. You help visitors find their way around the website and take part: donating, volunteering, or becoming a member.
+
+Website pages:
+- Home (/): overview, featured projects, newsletter signup
+- About (/about): mission, vision, team and history
+- Projects (/projects): current initiatives in education, healthcare, clean water and community development, with progress and funding
+- Get Involved (/get-involved): donation form, volunteer signup, membership registration
+- Events (/events): fundraising events, community gatherings, awareness campaigns
+- FAQ (/faq): common questions about donations, volunteering and how we operate
+- Contact (/contact): contact form and office details
+- Dashboard (/dashboard): signed-in donors, volunteers and members can track their involvement
+- Transparency (/transparency) and Reports (/reports): how funds are used, annual reports
+
+Key facts:
+- All amounts are in Ghana cedis (GH₵). The minimum donation is GH₵5.
+- Donations are processed securely by Paystack, by card or mobile money (MTN, Telecel, AirtelTigo). Donors can give one-time or choose a frequency, and can donate anonymously.
+- Focus areas: education, healthcare, clean water, food security, emergency relief, community empowerment.
+- Volunteering includes field work, administrative support, event planning and skills-based roles.
+- Contact: info@charityz.org, +233 246 381 145, 2 Benjy's Lodge, McCarty Hill, Accra, Ghana.
+
+How to respond:
+- Be warm, encouraging and concise: a few short sentences or a short list is usually enough. Write plain text without markdown headings or tables, since replies appear in a small chat window.
+- When pointing someone to a page, name it plainly (for example "our donation form on the Get Involved page"); the chat window adds navigation buttons automatically.
+- Only state facts given above or that the visitor tells you. For anything else, such as specific project figures, event dates, or questions about a particular donation, suggest the relevant page or contacting the team rather than guessing.
+- Stay on topics related to Charity Z and its work. Politely decline unrelated requests.`;
+
+const PAGE_CONTEXTS: Record<string, string> = {
+  '/': 'the home page',
+  '/about': 'the About page',
+  '/projects': 'the Projects page',
+  '/get-involved': 'the Get Involved page (donation form, volunteer signup, membership)',
+  '/donate': 'the donation form',
+  '/volunteer': 'the volunteer signup',
+  '/membership': 'the membership registration',
+  '/events': 'the Events page',
+  '/contact': 'the Contact page',
+  '/faq': 'the FAQ page',
+  '/dashboard': 'their personal dashboard',
+  '/auth': 'the sign-in page',
+  '/transparency': 'the Transparency page',
+  '/reports': 'the Reports page',
+};
+
+const FALLBACK_REPLY = "I'm sorry, I can't help with that right now. Please try again in a moment, or contact our team at info@charityz.org.";
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+const sha256 = async (text: string) =>
+  Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))))
+    .map((b) => b.toString(16).padStart(2, '0')).join('');
+
+const clean = (text: unknown) => (typeof text === 'string' ? text.trim().slice(0, MAX_MESSAGE_CHARS) : '');
+
+// Accepts prior turns from the browser, keeping only well-formed, alternating user/assistant text.
+function buildMessages(history: unknown, message: string): Anthropic.Beta.BetaMessageParam[] {
+  const turns: Anthropic.Beta.BetaMessageParam[] = [];
+  if (Array.isArray(history)) {
+    for (const item of history.slice(-MAX_HISTORY_MESSAGES)) {
+      const role = item?.role;
+      const content = clean(item?.content);
+      if ((role !== 'user' && role !== 'assistant') || !content) continue;
+      if (turns.length === 0 && role !== 'user') continue;
+      if (turns.length > 0 && turns[turns.length - 1].role === role) continue;
+      turns.push({ role, content });
+    }
+  }
+  if (turns.length > 0 && turns[turns.length - 1].role === 'user') turns.pop();
+  turns.push({ role: 'user', content: message });
+  return turns;
 }
 
 serve(async (req) => {
@@ -21,106 +96,63 @@ serve(async (req) => {
   }
 
   try {
-    // Require authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ 
-        error: 'Unauthorized - Authentication required',
-        reply: 'Please sign in to use the chatbot.' 
-      }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const { message, history, path } = await req.json();
+    const userMessage = clean(message);
+    if (!userMessage) {
+      return json({ error: 'Invalid or empty message', reply: 'Please type a question and I will do my best to help.' }, 400);
     }
 
-    const { message } = await req.json();
-
-    // Input validation and sanitization
-    const sanitizedMessage = sanitizeMessage(message);
-    
-    if (!sanitizedMessage) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Invalid or empty message',
-          reply: "Please provide a valid message to get assistance." 
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      )
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
+    const [visitorOk, globalOk] = await Promise.all([
+      supabase.rpc('chatbot_rate_limit_hit', { p_key: await sha256(`ip:${ip}`), p_limit: PER_VISITOR_LIMIT, p_window_seconds: PER_VISITOR_WINDOW_SECONDS }),
+      supabase.rpc('chatbot_rate_limit_hit', { p_key: 'global', p_limit: GLOBAL_DAILY_LIMIT, p_window_seconds: 86400 }),
+    ]);
+    if (visitorOk.error || globalOk.error) throw visitorOk.error || globalOk.error;
+    if (!visitorOk.data || !globalOk.data) {
+      return json({
+        error: 'rate_limited',
+        reply: "You've sent a lot of messages in a short time. Please wait a few minutes, or contact our team at info@charityz.org.",
+      }, 429);
     }
 
-    console.log("Received chatbot message:", sanitizedMessage);
+    const messages = buildMessages(history, userMessage);
+    const page = typeof path === 'string' ? PAGE_CONTEXTS[path] : undefined;
+    if (page) {
+      messages.push({ role: 'system', content: `The visitor is currently viewing ${page}.` });
+    }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: `You are a helpful AI assistant for Charity Z, a Ghanaian charity organization focused on supporting the needy and nurturing dreams in communities across Ghana and beyond.
-
-            WEBSITE NAVIGATION & INFORMATION:
-            - Home page: Overview of Charity Z, hero section, about summary, featured projects
-            - About page: Detailed mission, vision, team information, organizational history
-            - Projects page: Current initiatives including clean water, education, healthcare, and community development projects
-            - Get Involved page: Donation form (Paystack integration, GHS currency), volunteer signup, membership registration
-            - Events page: Upcoming fundraising events, community gatherings, awareness campaigns
-            - Contact page: Office locations, phone numbers, email addresses, contact form
-            - Dashboard: Personalized area for donors, volunteers, and members to track their involvement
-            - FAQ page: Common questions about donations, volunteering, and organizational operations
-            
-            CHARITY Z INFORMATION:
-            - Currency: Ghana Cedis (GH₵) - all donations and financial information use GHS
-            - Mission: Creating positive change through compassionate action and sustainable community development
-            - Focus Areas: Education, healthcare, clean water access, emergency relief, community empowerment
-            - Payment: Secure Paystack integration for donations, supporting local and international payments
-            - Volunteer opportunities: Field work, administrative support, event planning, skill-based volunteering
-            - Membership benefits: Monthly newsletters, voting on initiatives, exclusive events, community recognition
-            
-            RESPONSE GUIDELINES:
-            - Be warm, encouraging, and professional
-            - When suggesting navigation, use phrases like "visit our projects page" or "check out our donation form" - the system will automatically create navigation buttons
-            - Encourage active participation (donations, volunteering, membership)
-            - Use Ghana-specific context when appropriate
-            - Keep responses concise but comprehensive
-            - If users ask about specific amounts, mention GHS currency
-            - When mentioning specific pages or actions, the chatbot will automatically provide navigation buttons
-            - Focus on being helpful and guiding users to take action`
-          },
-          { role: 'user', content: sanitizedMessage }
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
+    const response = await anthropic.beta.messages.create({
+      model: MODEL,
+      max_tokens: 4096,
+      system: SYSTEM_PROMPT,
+      messages,
+      output_config: { effort: 'low' },
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+    if (response.stop_reason === 'refusal') {
+      console.warn('Chatbot request declined', response.stop_details);
+      return json({ reply: FALLBACK_REPLY });
     }
 
-    const data = await response.json();
-    const reply = data.choices[0].message.content;
+    const reply = response.content
+      .flatMap((block) => (block.type === 'text' ? [block.text] : []))
+      .join('')
+      .trim();
 
-    console.log("Generated AI response:", reply);
-
-    return new Response(JSON.stringify({ reply }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return json({ reply: reply || FALLBACK_REPLY });
   } catch (error) {
-    console.error('Error in ai-chatbot function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      reply: "I apologize, but I'm having trouble processing your message right now. Please try again later or contact our team directly." 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (error instanceof Anthropic.RateLimitError) {
+      console.error('Anthropic rate limit:', error.message);
+    } else if (error instanceof Anthropic.APIError) {
+      console.error(`Anthropic API error ${error.status}:`, error.message);
+    } else {
+      console.error('Error in ai-chatbot function:', error);
+    }
+    return json({
+      error: 'chatbot_unavailable',
+      reply: "I'm having trouble answering right now. Please try again later or contact our team at info@charityz.org.",
+    }, 503);
   }
 });

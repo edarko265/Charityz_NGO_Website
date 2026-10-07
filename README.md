@@ -8,7 +8,7 @@ Full-stack website for Charity Z Ghana ([www.charityz.com](https://www.charityz.
 - **Backend:** Supabase (Postgres + Row Level Security, Auth, Storage, Edge Functions)
 - **Payments:** Paystack (cards and mobile money, GHS)
 - **Email:** Resend
-- **AI chatbot:** OpenAI, called from the `ai-chatbot` Edge Function
+- **AI chatbot:** Claude (Anthropic API), called from the `ai-chatbot` Edge Function
 - **Hosting:** Hostinger (static build from GitHub, auto-deploy on push to `main`)
 
 ## Local development
@@ -36,7 +36,7 @@ Edge Function secrets (set in Supabase > Edge Functions > Secrets, never in the 
 | --- | --- |
 | `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SECRET_KEY` | `create-donation`, `verify-donation`, `paystack-webhook` |
 | `RESEND_API_KEY` | `send-contact-email`, `send-newsletter` |
-| `OPENAI_API_KEY` | `ai-chatbot` |
+| `ANTHROPIC_API_KEY` | `ai-chatbot` |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are provided to Edge Functions automatically.
 
@@ -49,7 +49,7 @@ supabase login
 supabase link --project-ref <your-project-ref>
 supabase db push                 # creates all tables, policies, functions and the storage bucket
 supabase functions deploy        # deploys every Edge Function in supabase/functions
-supabase secrets set PAYSTACK_PUBLIC_KEY=... PAYSTACK_SECRET_KEY=... RESEND_API_KEY=... OPENAI_API_KEY=...
+supabase secrets set PAYSTACK_PUBLIC_KEY=... PAYSTACK_SECRET_KEY=... RESEND_API_KEY=... ANTHROPIC_API_KEY=...
 ```
 
 Then, in the Supabase dashboard:
@@ -75,6 +75,10 @@ In hPanel, create a website from this GitHub repository with these build setting
 | Environment variables | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` |
 
 `public/.htaccess` is copied into the build so that deep links such as `/projects` or `/admin` load the app instead of returning 404.
+
+## AI chatbot
+
+The `ai-chatbot` Edge Function answers visitors' questions with Claude (`claude-opus-5-5` at low effort). It is public, so it is rate-limited per visitor (20 messages per 10 minutes, keyed by a hash of the IP address) and overall (2,000 messages per day). Both limits are constants at the top of `supabase/functions/ai-chatbot/index.ts`.
 
 ## Payments (Paystack)
 
